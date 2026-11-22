@@ -1,0 +1,5 @@
+.expo/
+.test-build/
+dist/
+package-lock.json
+LICENSE
