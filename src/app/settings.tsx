@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
 
+import { BackendAccount } from '@/features/backend/BackendAccount';
 import { useFamily } from '@/features/family/useFamily';
 
 import { Button } from '@/components/Button';
@@ -47,14 +48,7 @@ export default function SettingsScreen() {
           ]}
         />
       </Card>
-      <Card>
-        <Type variant="heading" accessibilityRole="header">
-          Account settings
-        </Type>
-        <Type tone="muted">
-          Account settings will be available when sign-in is enabled.
-        </Type>
-      </Card>
+      <BackendAccount />
       <Card>
         <Type variant="heading" accessibilityRole="header">
           Demo workspace
