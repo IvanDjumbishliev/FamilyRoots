@@ -1,44 +1,47 @@
 import type { PropsWithChildren } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { theme } from '@/constants/theme';
+import { useLayout } from '@/hooks/useLayout';
+import { useTheme } from '@/hooks/useTheme';
 
-type Props = PropsWithChildren<{ keyboardOffset?: number }>;
-
-export function Screen({ children, keyboardOffset = 0 }: Props) {
+export function Screen({
+  children,
+  keyboardOffset = 0,
+}: PropsWithChildren<{ keyboardOffset?: number }>) {
+  const { theme } = useTheme();
+  const { gutter, tablet } = useLayout();
   return (
-    <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.root}>
+    <SafeAreaView
+      edges={['left', 'right', 'bottom']}
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={keyboardOffset}
-        style={styles.flex}
+        style={{ flex: 1 }}
       >
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.scroll}
+          contentContainerStyle={{
+            paddingHorizontal: gutter,
+            paddingTop: tablet ? 36 : 20,
+            paddingBottom: 48,
+          }}
         >
-          <View style={styles.content}>{children}</View>
+          <View
+            role={Platform.OS === 'web' ? 'main' : undefined}
+            style={{
+              alignSelf: 'center',
+              width: '100%',
+              maxWidth: theme.layout.contentWidth,
+              gap: tablet ? 28 : 20,
+            }}
+          >
+            {children}
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: theme.colors.background },
-  flex: { flex: 1 },
-  scroll: { padding: theme.spacing.lg, paddingTop: theme.spacing.xl },
-  content: {
-    alignSelf: 'center',
-    width: '100%',
-    maxWidth: theme.layout.contentWidth,
-    gap: theme.spacing.lg,
-  },
-});

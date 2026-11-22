@@ -60,3 +60,9 @@ Use `npm run format` to apply formatting. Use `npx expo install <package>` for p
 - `src/hooks`, `src/services`, `src/types`, and `src/assets` are reserved for shared hooks, service integrations, domain types, and local assets.
 
 Use the `@/` alias to import from `src/`.
+
+## Design system
+
+Run `npm run web` and open **Showcase** or navigate to `/showcase` to try the shared controls, validation, dialog, and status states. The showcase is available in development builds. Open **Settings → Appearance** to follow the device theme or switch to light or dark for the current app session.
+
+Shared components live in `src/components`. Use `useTheme` for semantic color and typography tokens and `useLayout` for tablet and desktop breakpoints. No additional environment variables are required for Phase 2.

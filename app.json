@@ -4,9 +4,14 @@
     "slug": "familyroots-ai",
     "scheme": "familyroots",
     "version": "0.1.0",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "plugins": ["expo-router"],
-    "android": { "softwareKeyboardLayoutMode": "resize" },
-    "web": { "bundler": "metro", "output": "static" }
+    "android": {
+      "softwareKeyboardLayoutMode": "resize"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
   }
 }

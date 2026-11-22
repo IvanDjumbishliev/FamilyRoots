@@ -1,53 +1,82 @@
-import type { Ref } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  type TextInputProps,
-} from 'react-native';
+import { useId, useState, type Ref } from 'react';
+import { Platform, TextInput, View, type TextInputProps } from 'react-native';
 
-import { theme } from '@/constants/theme';
+import { Type } from '@/components/Type';
+import { useTheme } from '@/hooks/useTheme';
 
 type Props = TextInputProps & {
   label: string;
   error?: string;
+  hint?: string;
   ref?: Ref<TextInput>;
 };
 
-export function TextField({ label, error, style, ...props }: Props) {
+export function TextField({
+  label,
+  error,
+  hint,
+  style,
+  onFocus,
+  onBlur,
+  ...props
+}: Props) {
+  const { theme } = useTheme();
+  const [focused, setFocused] = useState(false);
+  const messageId = useId();
+  const message = error || hint;
+  const { colors } = theme;
+
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={{ gap: 6 }}>
+      <Type variant="label">{label}</Type>
       <TextInput
-        accessibilityLabel={label}
-        placeholderTextColor={theme.colors.muted}
+        placeholderTextColor={colors.muted}
         {...props}
-        style={[styles.input, error && styles.invalid, style]}
+        accessibilityLabel={props.accessibilityLabel ?? label}
+        accessibilityHint={
+          Platform.OS === 'web'
+            ? undefined
+            : (message ?? props.accessibilityHint)
+        }
+        aria-describedby={message ? messageId : undefined}
+        aria-invalid={Boolean(error)}
+        onFocus={(event) => {
+          setFocused(true);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          onBlur?.(event);
+        }}
+        style={[
+          {
+            ...theme.typography.body,
+            backgroundColor: colors.surface,
+            color: colors.text,
+            minHeight: theme.layout.controlHeight,
+            paddingHorizontal: theme.spacing.md,
+            paddingVertical: theme.spacing.sm,
+            borderWidth: 1,
+            borderColor: error ? colors.danger : colors.inputBorder,
+            borderRadius: theme.borders.control,
+            outlineStyle: focused ? 'solid' : undefined,
+            outlineWidth: focused ? 2 : undefined,
+            outlineColor: focused ? colors.focus : undefined,
+            outlineOffset: focused ? 2 : undefined,
+          },
+          style,
+        ]}
       />
-      {error && (
-        <Text accessibilityRole="alert" style={styles.error}>
-          {error}
-        </Text>
+      {message && (
+        <Type
+          nativeID={messageId}
+          variant="detail"
+          tone={error ? 'danger' : 'muted'}
+          accessibilityRole={error ? 'alert' : undefined}
+        >
+          {message}
+        </Type>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  field: { gap: theme.spacing.xs },
-  label: { ...theme.typography.label, color: theme.colors.text },
-  input: {
-    ...theme.typography.body,
-    backgroundColor: theme.colors.surface,
-    color: theme.colors.text,
-    minHeight: theme.layout.controlHeight,
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderWidth: theme.borders.width,
-    borderColor: theme.colors.inputBorder,
-    borderRadius: theme.borders.control,
-  },
-  invalid: { borderColor: theme.colors.danger },
-  error: { ...theme.typography.label, color: theme.colors.danger },
-});

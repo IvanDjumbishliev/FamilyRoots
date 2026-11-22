@@ -1,8 +1,4 @@
-import { StyleSheet, Text } from 'react-native';
-
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
-import { theme } from '@/constants/theme';
+import { State } from '@/components/State';
 
 export function ErrorState({
   message,
@@ -12,15 +8,11 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <Card>
-      <Text accessibilityRole="alert" style={styles.message}>
-        {message}
-      </Text>
-      {onRetry && <Button label="Try again" onPress={onRetry} />}
-    </Card>
+    <State
+      kind="error"
+      title="Something went wrong"
+      message={message}
+      action={onRetry ? { label: 'Try again', onPress: onRetry } : undefined}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  message: { ...theme.typography.body, color: theme.colors.danger },
-});

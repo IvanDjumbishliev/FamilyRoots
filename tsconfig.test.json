@@ -8,5 +8,5 @@
     "rootDir": "src",
     "outDir": ".test-build"
   },
-  "include": ["src/lib/env.test.ts"]
+  "include": ["src/lib/env.test.ts", "src/constants/palette.test.ts"]
 }

@@ -1,32 +1,48 @@
 import { Platform } from 'react-native';
 
-export const theme = {
-  colors: {
-    background: '#F6F4EE',
-    surface: '#FFFFFF',
-    text: '#202D25',
-    muted: '#4C5C51',
-    primary: '#23513A',
-    primaryPressed: '#193D2B',
-    onPrimary: '#FFFFFF',
-    border: '#C9D2CA',
-    inputBorder: '#74867A',
-    disabled: '#DCE4DC',
-    danger: '#9A332E',
-  },
+import { brand, darkColors, lightColors } from '@/constants/palette';
+
+const shared = {
   typography: {
-    title: { fontSize: 36, lineHeight: 44, fontWeight: '700' },
-    heading: { fontSize: 23, lineHeight: 30, fontWeight: '600' },
-    body: { fontSize: 17, lineHeight: 26 },
-    label: { fontSize: 16, lineHeight: 22, fontWeight: '600' },
+    display: {
+      fontFamily: Platform.select({
+        ios: 'Georgia',
+        android: 'serif',
+        web: 'Georgia, serif',
+      }),
+      fontSize: 56,
+      lineHeight: 62,
+      fontWeight: '400',
+    },
+    title: { fontSize: 32, lineHeight: 39, fontWeight: '700' },
+    heading: { fontSize: 22, lineHeight: 29, fontWeight: '600' },
+    body: { fontSize: 16, lineHeight: 25 },
+    label: { fontSize: 15, lineHeight: 21, fontWeight: '600' },
+    detail: { fontSize: 14, lineHeight: 20 },
   },
   spacing: { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 },
-  borders: { width: 1, control: 8, card: 16 },
-  shadows: {
-    card: Platform.select({
-      android: { elevation: 2 },
-      default: { boxShadow: '0px 2px 10px rgba(32, 45, 37, 0.08)' },
-    }),
-  },
-  layout: { contentWidth: 800, controlHeight: 48 },
+  borders: { width: 1, control: 10, card: 18, hero: 26 },
+  layout: { contentWidth: 1120, controlHeight: 48, tablet: 640, desktop: 1024 },
 } as const;
+
+function createTheme(colors: typeof lightColors, shadow: string) {
+  return {
+    ...shared,
+    brand,
+    colors,
+    shadows: {
+      card: Platform.select({
+        android: { elevation: 2 },
+        default: { boxShadow: shadow },
+      }),
+    },
+  };
+}
+
+export const themes = {
+  light: createTheme(lightColors, '0px 3px 18px rgba(38, 49, 45, 0.06)'),
+  dark: createTheme(darkColors, '0px 3px 18px rgba(0, 0, 0, 0.22)'),
+};
+
+export type Theme = (typeof themes)['light'];
+export type AppearancePreference = 'system' | keyof typeof themes;
