@@ -1,0 +1,56 @@
+import { useState } from 'react';
+
+import { ActionLink } from '@/components/ActionLink';
+import { Card } from '@/components/Card';
+import { PageHeading } from '@/components/PageHeading';
+import { Screen } from '@/components/Screen';
+import { State } from '@/components/State';
+import { TextField } from '@/components/TextField';
+import { searchPeople } from '@/features/family/familySummary';
+import { PersonList } from '@/features/family/PersonList';
+import { useFamily } from '@/features/family/useFamily';
+
+export default function DiscoverScreen() {
+  const { snapshot } = useFamily();
+  const [query, setQuery] = useState('');
+  const results = searchPeople(snapshot.people, query);
+
+  return (
+    <Screen>
+      <PageHeading
+        title="Discover"
+        description="Search people already in your family tree by name or relationship."
+      />
+      <Card>
+        {snapshot.people.length ? (
+          <>
+            <TextField
+              label="Search your family tree"
+              value={query}
+              onChangeText={setQuery}
+              autoCorrect={false}
+            />
+            {results.length ? (
+              <PersonList people={results} />
+            ) : query.trim() ? (
+              <State
+                kind="empty"
+                title="No matches"
+                message="Try part of a name or a different relationship."
+              />
+            ) : null}
+          </>
+        ) : (
+          <>
+            <State
+              kind="empty"
+              title="Your tree has no people to search"
+              message="Add a relative to make them searchable here."
+            />
+            <ActionLink href="/family-tree/add" label="Add Person" icon="add" />
+          </>
+        )}
+      </Card>
+    </Screen>
+  );
+}

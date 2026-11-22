@@ -1,7 +1,8 @@
 import { useState, type Ref } from 'react';
-import { Pressable, Text, View, type PressableProps } from 'react-native';
+import { Text, type PressableProps, type View } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
+import { LinkPressable } from '@/components/LinkPressable';
 import { useTheme } from '@/hooks/useTheme';
 
 type Props = Omit<PressableProps, 'children' | 'style'> & {
@@ -41,7 +42,7 @@ export function Button({
         : 'transparent';
 
   return (
-    <Pressable
+    <LinkPressable
       {...props}
       accessibilityRole={accessibilityRole}
       accessibilityState={{
@@ -99,6 +100,6 @@ export function Button({
       >
         {label}
       </Text>
-    </Pressable>
+    </LinkPressable>
   );
 }

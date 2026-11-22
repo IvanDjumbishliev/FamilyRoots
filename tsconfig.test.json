@@ -8,5 +8,9 @@
     "rootDir": "src",
     "outDir": ".test-build"
   },
-  "include": ["src/lib/env.test.ts", "src/constants/palette.test.ts"]
+  "include": [
+    "src/lib/env.test.ts",
+    "src/constants/palette.test.ts",
+    "src/features/family/familySummary.test.ts"
+  ]
 }

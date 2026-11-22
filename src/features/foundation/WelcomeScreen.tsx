@@ -1,19 +1,23 @@
-import { Link } from 'expo-router';
 import { View } from 'react-native';
 
-import { Button } from '@/components/Button';
+import { ActionLink } from '@/components/ActionLink';
 import { Card } from '@/components/Card';
-import { Icon } from '@/components/Icon';
 import { Screen } from '@/components/Screen';
 import { State } from '@/components/State';
 import { Type } from '@/components/Type';
+import { summarizeFamily } from '@/features/family/familySummary';
+import { PersonList } from '@/features/family/PersonList';
+import { useFamily } from '@/features/family/useFamily';
 import { FamilyIllustration } from '@/features/foundation/FamilyIllustration';
 import { useLayout } from '@/hooks/useLayout';
 import { useTheme } from '@/hooks/useTheme';
 
 export function WelcomeScreen() {
   const { theme } = useTheme();
-  const { desktop, tablet } = useLayout();
+  const { desktop } = useLayout();
+  const { snapshot } = useFamily();
+  const { memberCount, generationCount, recentPeople, timeline, activity } =
+    summarizeFamily(snapshot);
 
   return (
     <Screen>
@@ -21,79 +25,167 @@ export function WelcomeScreen() {
         style={{
           borderRadius: theme.borders.hero,
           backgroundColor: theme.brand.forest,
-          padding: desktop ? 48 : 24,
-          gap: tablet ? 24 : 16,
-          flexDirection: tablet ? 'row' : 'column',
-          alignItems: tablet ? 'center' : 'stretch',
+          padding: desktop ? 36 : 22,
+          gap: 16,
+          flexDirection: desktop ? 'row' : 'column',
+          alignItems: desktop ? 'center' : 'stretch',
         }}
       >
-        <View style={{ flex: tablet ? 1.25 : undefined, minWidth: 0, gap: 16 }}>
-          <Type variant="label" style={{ color: '#E4CA95' }}>
-            YOUR FAMILY HISTORY
-          </Type>
+        <View
+          style={{ flex: desktop ? 1.25 : undefined, minWidth: 0, gap: 12 }}
+        >
           <Type
             variant="display"
             accessibilityRole="header"
             aria-level={1}
             style={{
               color: theme.brand.ivory,
-              ...(desktop ? {} : { fontSize: 42, lineHeight: 47 }),
+              fontSize: desktop ? 47 : 34,
+              lineHeight: desktop ? 54 : 40,
             }}
           >
-            Every family has a story.
+            Welcome, {snapshot.profileName}
           </Type>
-          <Type style={{ color: '#E0EAE3', maxWidth: 440 }}>
-            A place to trace your roots and keep the stories that make your
-            family who they are.
+          <Type style={{ color: '#E0EAE3' }}>
+            {memberCount
+              ? 'Pick up where you left off and keep your family’s story growing.'
+              : 'Start with yourself or someone whose story you know well.'}
           </Type>
         </View>
-        <View
-          style={{
-            flex: tablet ? 1 : undefined,
-            width: tablet ? undefined : '100%',
-            alignSelf: tablet ? undefined : 'center',
-            maxWidth: 400,
-            height: desktop ? 236 : 170,
-          }}
-        >
-          <FamilyIllustration />
-        </View>
+        {desktop && (
+          <View style={{ flex: 1, maxWidth: 280, height: 150 }}>
+            <FamilyIllustration />
+          </View>
+        )}
       </View>
-      <View style={{ flexDirection: tablet ? 'row' : 'column', gap: 16 }}>
-        <Card style={{ flex: tablet ? 1.6 : undefined }}>
-          <Type variant="label" tone="accent">
-            FAMILY TREE
-          </Type>
+
+      {memberCount === 0 && (
+        <Card>
           <State
             kind="empty"
-            title="Your tree is empty"
-            message="The people and relationships you add will appear here."
+            title="Start your family tree"
+            message="Add one person to begin. A name and generation are enough. Add a birth year whenever you know it."
+          />
+          <ActionLink
+            href="/family-tree/add"
+            label="Add your first person"
+            icon="add"
           />
         </Card>
-        <Card style={{ flex: tablet ? 1 : undefined }}>
-          <View
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 12,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.subtle,
-            }}
-          >
-            <Icon name="sun" color={theme.colors.accent} />
-          </View>
+      )}
+
+      <View style={{ flexDirection: desktop ? 'row' : 'column', gap: 16 }}>
+        <Card style={{ flex: desktop ? 1 : undefined }}>
           <Type variant="heading" accessibilityRole="header">
-            Appearance
+            Family overview
           </Type>
-          <Type tone="muted">
-            Choose a light or dark theme, or follow your device settings.
+          <Type tone="muted">{snapshot.familyName}</Type>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {[
+              [memberCount, 'Family members'],
+              [generationCount, 'Generations'],
+            ].map(([value, label]) => (
+              <View
+                key={label}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  borderRadius: 12,
+                  backgroundColor: theme.colors.subtle,
+                  padding: 12,
+                }}
+              >
+                <Type variant="title">{value}</Type>
+                <Type variant="detail" tone="muted">
+                  {label}
+                </Type>
+              </View>
+            ))}
+          </View>
+        </Card>
+        <Card style={{ flex: desktop ? 1 : undefined }}>
+          <Type variant="heading" accessibilityRole="header">
+            Quick actions
           </Type>
-          <Link href="/settings" asChild>
-            <Button variant="secondary" label="Open settings" icon="arrow" />
-          </Link>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <ActionLink href="/family-tree/add" label="Add Person" icon="add" />
+            <ActionLink
+              href="/family-tree"
+              label="View Tree"
+              variant="secondary"
+              icon="tree"
+            />
+            <ActionLink
+              href="/family-archive/upload"
+              label="Upload Memory"
+              variant="secondary"
+              icon="upload"
+            />
+            <ActionLink
+              href="/my-books/create"
+              label="Create Book"
+              variant="secondary"
+              icon="book"
+            />
+          </View>
         </Card>
       </View>
+
+      <View style={{ flexDirection: desktop ? 'row' : 'column', gap: 16 }}>
+        <Card style={{ flex: desktop ? 1 : undefined }}>
+          <Type variant="heading" accessibilityRole="header">
+            Recently added relatives
+          </Type>
+          {recentPeople.length ? (
+            <PersonList people={recentPeople} />
+          ) : (
+            <Type tone="muted">
+              People you add to the tree will appear here.
+            </Type>
+          )}
+        </Card>
+        <Card style={{ flex: desktop ? 1 : undefined }}>
+          <Type variant="heading" accessibilityRole="header">
+            Family history timeline
+          </Type>
+          {timeline.length ? (
+            timeline.map((event) => (
+              <View key={event.id} style={{ flexDirection: 'row', gap: 12 }}>
+                <Type variant="label" tone="accent">
+                  {event.year}
+                </Type>
+                <Type style={{ flex: 1, minWidth: 0 }}>{event.label}</Type>
+              </View>
+            ))
+          ) : (
+            <Type tone="muted">
+              Add birth years to start your family timeline.
+            </Type>
+          )}
+        </Card>
+      </View>
+
+      <Card>
+        <Type variant="heading" accessibilityRole="header">
+          Recent activity
+        </Type>
+        {activity.length ? (
+          activity.map((entry) => (
+            <View key={entry.id} style={{ gap: 2 }}>
+              <Type>{entry.label}</Type>
+              <Type variant="detail" tone="muted">
+                {new Date(entry.createdAt).toLocaleDateString(undefined, {
+                  dateStyle: 'medium',
+                })}
+              </Type>
+            </View>
+          ))
+        ) : (
+          <Type tone="muted">
+            New relatives, memories, and book drafts will be listed here.
+          </Type>
+        )}
+      </Card>
     </Screen>
   );
 }

@@ -63,6 +63,14 @@ Use the `@/` alias to import from `src/`.
 
 ## Design system
 
-Run `npm run web` and open **Showcase** or navigate to `/showcase` to try the shared controls, validation, dialog, and status states. The showcase is available in development builds. Open **Settings → Appearance** to follow the device theme or switch to light or dark for the current app session.
+Run `npm run web` and open **Settings → Component showcase** or navigate to `/showcase` to try the shared controls, validation, dialog, and status states. The showcase is available in development builds. Open **Settings → Appearance** to follow the device theme or switch to light or dark for the current app session.
 
 Shared components live in `src/components`. Use `useTheme` for semantic color and typography tokens and `useLayout` for tablet and desktop breakpoints. No additional environment variables are required for Phase 2.
+
+## Dashboard and demo workspaces
+
+The app starts with the fictional Moreau family. Open **Settings → Demo workspace → Empty family** to try onboarding. The two workspaces are independent and changes last until the page reloads or the app restarts.
+
+Use **Add Person** to add a relative, **View Tree** to see people grouped by generation, **Upload Memory** to attach a local file, and **Create Book** to save and preview a draft outline. Discover searches the active tree by name and relationship. Files and other demo changes stay local to the running app. No new environment variables or credentials are needed.
+
+`FamilyRepository` in `src/types/family.ts` defines the read, subscription, and write interface. `FamilyProvider` accepts a repository implementation. Phase 3 uses the in-memory repository in `src/services/mockFamilyRepository.ts`. The mobile shell uses bottom navigation and larger windows use a sidebar. The development showcase remains accessible from **Settings**.

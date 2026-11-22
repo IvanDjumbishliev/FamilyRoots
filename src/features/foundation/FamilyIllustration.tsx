@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
 const nodes = [
@@ -13,7 +14,7 @@ export function FamilyIllustration() {
       width="100%"
       height="100%"
       aria-hidden
-      accessible={false}
+      accessible={Platform.OS === 'web' ? undefined : false}
     >
       <Circle cx="180" cy="109" r="106" fill="#224B3E" />
       <Circle

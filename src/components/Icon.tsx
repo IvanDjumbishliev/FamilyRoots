@@ -1,9 +1,15 @@
+import { Platform } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { useTheme } from '@/hooks/useTheme';
 
 const paths = {
   tree: 'M12 20v-9m0 4C7 15 4 12 4 7c4 0 7 2 8 5 1-5 4-8 8-8 0 6-3 10-8 11m-4 5h8',
+  search: 'M16 16l5 5M18 11a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z',
+  archive: 'M4 8h16v12H4zM3 4h18v4H3zm6 8h6',
+  book: 'M12 6c-3-2-6-2-9-1v14c3-1 6-1 9 1 3-2 6-2 9-1V5c-3-1-6-1-9 1Zm0 0v14',
+  add: 'M12 5v14M5 12h14',
+  upload: 'M12 16V3m-5 5 5-5 5 5M4 16v5h16v-5',
   home: 'm3 10 9-7 9 7v10h-6v-6H9v6H3z',
   settings: 'M4 7h16M4 17h16M8 4v6m8 4v6',
   grid: 'M4 4h6v6H4zm10 0h6v6h-6zM4 14h6v6H4zm10 0h6v6h-6z',
@@ -32,7 +38,7 @@ export function Icon({
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      accessible={false}
+      accessible={Platform.OS === 'web' ? undefined : false}
       aria-hidden
     >
       <Path
