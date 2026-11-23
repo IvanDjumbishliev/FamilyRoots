@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { z } from 'zod';
 
 import { Card } from '@/components/Card';
@@ -10,7 +10,62 @@ import { FormActions } from '@/features/family/FormActions';
 import { useFamily } from '@/features/family/useFamily';
 import { useSave } from '@/features/family/useSave';
 
+import { ErrorState } from '@/components/ErrorState';
+import { LoadingState } from '@/components/LoadingState';
+import { PersonEditor } from '@/features/people/PersonEditor';
+import { usePeople, usePeopleQuery } from '@/features/people/usePeople';
+import { isRecordId, type PeopleRepository } from '@/services/peopleRepository';
+
 export default function AddPersonScreen() {
+  const { repository, firstTree } = usePeople();
+  const { treeId } = useLocalSearchParams<{ treeId?: string }>();
+  const target = isRecordId(treeId) ? treeId : firstTree;
+  if (repository && target)
+    return <AddConnectedPerson repository={repository} treeId={target} />;
+  return <AddDemoPerson />;
+}
+
+function AddConnectedPerson({
+  repository,
+  treeId,
+}: {
+  repository: PeopleRepository;
+  treeId: string;
+}) {
+  const router = useRouter();
+  const read = useCallback(
+    () => repository.access(treeId),
+    [repository, treeId],
+  );
+  const result = usePeopleQuery(read);
+  if (result.error || !result.data) {
+    return (
+      <Screen>
+        {result.error ? (
+          <ErrorState message={result.error} onRetry={result.reload} />
+        ) : (
+          <LoadingState label="Checking tree access…" />
+        )}
+      </Screen>
+    );
+  }
+  if (!result.data.canEdit)
+    return <Redirect href={{ pathname: '/family-tree', params: { treeId } }} />;
+  return (
+    <PersonEditor
+      key={treeId}
+      write={(values) => repository.create(treeId, values)}
+      onSaved={(personId) =>
+        router.replace({
+          pathname: '/family-tree/[personId]',
+          params: { personId },
+        })
+      }
+    />
+  );
+}
+
+function AddDemoPerson() {
   const { repository, workspace, snapshot } = useFamily();
   const router = useRouter();
   const { save, saving, error } = useSave();

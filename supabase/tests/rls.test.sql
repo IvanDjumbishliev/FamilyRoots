@@ -70,9 +70,7 @@ select throws_ok($$insert into public.parent_child_relationships
 select throws_ok($$insert into public.source_citations (tree_id, source_id, person_id)
   values ('20000000-0000-4000-8000-000000000001', '50000000-0000-4000-8000-000000000001',
   '30000000-0000-4000-8000-000000000003')$$, '23503', null, 'citations cannot target a different tree');
-with change as (delete from public.people where id = '30000000-0000-4000-8000-000000000003' returning id)
-select is((select count(*) from change),
-  0::bigint, 'editor cannot delete another family’s record');
+select throws_ok($$delete from public.people where id = '30000000-0000-4000-8000-000000000003'$$, '42501', null, 'editor cannot delete another family’s record');
 
 set local request.jwt.claims = '{"sub":"10000000-0000-4000-8000-000000000003","role":"authenticated"}';
 select is((select count(*) from public.people), 3::bigint, 'viewer reads shared records');
@@ -86,9 +84,7 @@ select throws_ok($$insert into public.people (tree_id, display_name)
 with change as (update public.people set display_name = 'Changed' returning id)
 select is((select count(*) from change),
   0::bigint, 'viewer cannot update records');
-with change as (delete from public.people returning id)
-select is((select count(*) from change),
-  0::bigint, 'viewer cannot delete records');
+select throws_ok($$delete from public.people$$, '42501', null, 'viewer cannot delete records');
 
 set local request.jwt.claims = '{"sub":"10000000-0000-4000-8000-000000000004","role":"authenticated"}';
 select is((select display_name from public.people), 'Marisol Rivera', 'outsider sees only their own tree');

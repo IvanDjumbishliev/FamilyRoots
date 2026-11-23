@@ -11,7 +11,7 @@ npm ci
 npm run web
 ```
 
-Open the URL printed by Expo. Select **Settings**, then **Back to home** to check navigation. You can also open `/settings` directly. For a production web bundle, use `npm run build:web`. Expo writes the static export to `dist/`.
+Open the URL printed by Expo. Select **Settings**, then **Back to home** to check navigation. You can also open `/settings` directly. For a production web bundle, use `npm run build:web`. Expo writes the single-page export to `dist/`. Serve existing assets normally and rewrite other requests to `index.html` so account callbacks and private person URLs open directly.
 
 ## Run on mobile
 
@@ -112,7 +112,7 @@ Each profile is readable and editable by its account holder. Memberships are vis
 
 Record unknown dates as `NULL` with precision `unknown`. Use the first day of the year or month to store partial dates and set the matching precision. Approximation is recorded separately. Relationship provenance and verification are separate fields. The database rejects verified relationships whose provenance is still `ai_suggested`.
 
-The private `family-media` bucket accepts paths of the form `<tree UUID>/<unique-file-name>`, with a 10 MB per-file limit. Storage authorization checks the tree membership on each request. Uploads, relationship editing, and ownership transfer in the connected UI are outside this backend foundation.
+The private `family-media` bucket accepts paths of the form `<tree UUID>/<unique-file-name>`, with a 10 MB per-file limit. Storage authorization checks the tree membership on each request. The connected person profile supports photograph uploads. Relationship editing and ownership transfer are separate workflows.
 
 After schema changes, regenerate the database types against the migrated local stack:
 
@@ -136,7 +136,15 @@ Start Supabase with Mailpit enabled. If the stack was already running when you c
 
 1. Apply the database migrations. In the Supabase Dashboard, enable email and password signup and require email confirmation. Set the minimum password length to 12, choose six-digit email codes, and set an appropriate code lifetime and request rate limits. The local configuration uses a 10-minute lifetime and a 30-second email request interval.
 2. Configure your SMTP provider for signup and recovery email. Add the sender credentials to Supabase Auth. Keep the app environment limited to the Supabase URL and publishable key.
-3. Set the Auth **Site URL** to your HTTPS web origin. Add the exact callback URLs for that origin, ending in `/verify-email` and `/reset-password`, plus `familyroots://verify-email` and `familyroots://reset-password` for native builds. Serve both web paths through the Expo Router export.
+3. Set the Auth **Site URL** to your HTTPS web origin. Add the exact callback URLs for that origin, ending in `/verify-email` and `/reset-password`, plus `familyroots://verify-email` and `familyroots://reset-password` for native builds. Serve both web paths through the single-page fallback described above.
 4. Copy [the confirmation template](supabase/templates/confirmation.html) into **Confirm sign up** and [the recovery template](supabase/templates/recovery.html) into **Reset password**. The messages keep credentials out of the deep link and provide the one-time code separately. Links and code verification work from another device that has the app or web origin available.
 
 The mobile client stores its persistent session in Expo SecureStore and clears the legacy unencrypted session cache. The web client persists the Supabase session in origin-scoped browser storage. Serve production web over HTTPS. Password recovery uses a temporary isolated session and requires a separate login afterward. The app throttles repeated submissions and uses generic responses to code requests. Configure provider-side Auth rate limits to enforce abuse controls independently of the client.
+
+## Managing family members
+
+Sign in and open **Family Tree**. Select a tree if your account belongs to more than one. Use the directory to search display names, birth names, and alternative names and filter active profiles, drafts, archived profiles, or living status. Owners and editors can add people and edit profiles. Viewers can read authorized records. Without a Supabase connection, Family Tree opens the session-based demo.
+
+A person can be saved as a draft before a name is known. For dates, enter a year, year and month, or full date and mark it approximate when needed. Leave the date blank if unknown. A person's photo and citations can be attached after saving their profile. Photos are uploaded to the private `family-media` bucket and displayed through short-lived URLs. No additional credentials or environment variables are required.
+
+Archiving keeps the person, relationships, media, and sources. Find the person in **Archived** to restore them. Profile history shows which fields changed and when. Supabase records the actor alongside those changes. Deploy the latest migrations using the Supabase setup above before using connected person management.

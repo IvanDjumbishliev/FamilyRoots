@@ -1,3 +1,5 @@
+import { useLocalSearchParams } from 'expo-router';
+
 import { ActionLink } from '@/components/ActionLink';
 import { Card } from '@/components/Card';
 import { PageHeading } from '@/components/PageHeading';
@@ -8,7 +10,26 @@ import { groupGenerations } from '@/features/family/familySummary';
 import { PersonList } from '@/features/family/PersonList';
 import { useFamily } from '@/features/family/useFamily';
 
+import { PeopleDirectory } from '@/features/people/PeopleDirectory';
+import { usePeople } from '@/features/people/usePeople';
+import { isRecordId } from '@/services/peopleRepository';
+
 export default function TreeScreen() {
+  const { repository, firstTree } = usePeople();
+  const { treeId } = useLocalSearchParams<{ treeId?: string }>();
+  const start = isRecordId(treeId) ? treeId : firstTree;
+  if (repository && start)
+    return (
+      <PeopleDirectory
+        key={start}
+        repository={repository}
+        initialTree={start}
+      />
+    );
+  return <DemoTree />;
+}
+
+function DemoTree() {
   const { snapshot } = useFamily();
   const generations = groupGenerations(snapshot.people);
 

@@ -5,11 +5,13 @@ import { Type } from '@/components/Type';
 import {
   acceptedMemoryExtensions,
   validateMemoryFile,
+  imageMimeTypes,
   type MemoryFileFieldProps,
 } from '@/features/family/memoryFile';
 
 export function MemoryFileField({
   file,
+  imagesOnly = false,
   onFile,
   onError,
 }: MemoryFileFieldProps) {
@@ -21,7 +23,9 @@ export function MemoryFileField({
         ref={input}
         hidden
         type="file"
-        accept={acceptedMemoryExtensions}
+        accept={
+          imagesOnly ? imageMimeTypes.join(',') : acceptedMemoryExtensions
+        }
         aria-labelledby={label}
         onChange={(event) => {
           const selected = event.currentTarget.files?.[0];
@@ -33,9 +37,12 @@ export function MemoryFileField({
               selected.type,
               selected.size,
             );
+            if (imagesOnly && !mimeType.startsWith('image/'))
+              throw new Error('Choose a supported photograph.');
             onFile({
               name: selected.name,
               mimeType,
+              getBytes: () => selected.arrayBuffer(),
               getUri: () => URL.createObjectURL(selected),
             });
           } catch (error) {

@@ -1,22 +1,25 @@
 import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
 
 import { Button } from '@/components/Button';
 import { Type } from '@/components/Type';
 import {
   memoryMimeTypes,
   validateMemoryFile,
+  imageMimeTypes,
   type MemoryFileFieldProps,
 } from '@/features/family/memoryFile';
 
 export function MemoryFileField({
   file,
+  imagesOnly = false,
   onFile,
   onError,
 }: MemoryFileFieldProps) {
   async function pick() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: memoryMimeTypes,
+        type: imagesOnly ? imageMimeTypes : memoryMimeTypes,
         copyToCacheDirectory: true,
       });
       if (result.canceled) return;
@@ -26,7 +29,14 @@ export function MemoryFileField({
         asset.mimeType,
         asset.size,
       );
-      onFile({ name: asset.name, mimeType, getUri: () => asset.uri });
+      if (imagesOnly && !mimeType.startsWith('image/'))
+        throw new Error('Choose a supported photograph.');
+      onFile({
+        name: asset.name,
+        mimeType,
+        getUri: () => asset.uri,
+        getBytes: () => new File(asset.uri).arrayBuffer(),
+      });
     } catch (error) {
       onError(
         error instanceof Error ? error.message : 'Couldn’t open that file.',

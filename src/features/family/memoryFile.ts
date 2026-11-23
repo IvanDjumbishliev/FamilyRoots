@@ -1,11 +1,13 @@
 export type MemoryFile = {
   name: string;
   mimeType: string;
+  getBytes: () => Promise<ArrayBuffer>;
   getUri: () => string;
 };
 
 export type MemoryFileFieldProps = {
   file?: MemoryFile;
+  imagesOnly?: boolean;
   onFile: (file: MemoryFile) => void;
   onError: (error: string) => void;
 };
@@ -48,3 +50,7 @@ export function validateMemoryFile(
   }
   return type;
 }
+
+export const imageMimeTypes = memoryMimeTypes.filter((type) =>
+  type.startsWith('image/'),
+);

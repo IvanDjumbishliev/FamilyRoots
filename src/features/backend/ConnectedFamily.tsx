@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
+import { ActionLink } from '@/components/ActionLink';
 import { Button } from '@/components/Button';
 import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
@@ -141,7 +142,6 @@ function TreePeople({
     [repository, tree.id, userId],
   );
   const { data, error, retry } = useBackendRead(readTree);
-  const [name, setName] = useState('');
   if (error) return <ErrorState message={error} onRetry={retry} />;
   if (!data) return <LoadingState label="Loading family members…" />;
   return (
@@ -156,20 +156,15 @@ function TreePeople({
       ) : (
         <Type tone="muted">This connected tree has no family members yet.</Type>
       )}
+      <ActionLink
+        href={{ pathname: '/family-tree', params: { treeId: tree.id } }}
+        label="View family members"
+        variant="secondary"
+      />
       {data.role !== 'viewer' && (
-        <RecordForm
-          label="Family member name"
-          button="Add family member"
-          value={name}
-          setValue={setName}
-          maxLength={160}
-          onSave={async (value) => {
-            await repository.addPerson({
-              tree_id: tree.id,
-              display_name: value,
-            });
-            retry();
-          }}
+        <ActionLink
+          href={{ pathname: '/family-tree/add', params: { treeId: tree.id } }}
+          label="Add family member"
         />
       )}
     </View>

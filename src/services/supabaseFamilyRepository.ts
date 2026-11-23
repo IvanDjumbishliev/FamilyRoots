@@ -1,5 +1,5 @@
 import type { BackendClient } from '@/lib/supabase';
-import type { Database, Tables, TablesInsert } from '@/types/database';
+import type { Database, Tables } from '@/types/database';
 
 export type ConnectedTree = Pick<Tables<'family_trees'>, 'id' | 'name'>;
 type ConnectedPerson = Pick<
@@ -17,9 +17,6 @@ export interface ConnectedFamilyRepository {
     people: ConnectedPerson[];
     role: Database['public']['Enums']['tree_role'];
   }>;
-  addPerson(
-    person: Pick<TablesInsert<'people'>, 'tree_id' | 'display_name'>,
-  ): Promise<void>;
 }
 
 export function describeBackendError(error: unknown) {
@@ -75,15 +72,13 @@ export function createSupabaseFamilyRepository(
           .from('people')
           .select('id, display_name, living_status')
           .eq('tree_id', treeId)
+          .is('archived_at', null)
+          .eq('is_draft', false)
           .order('display_name'),
       ]);
       if (membership.error) throw membership.error;
       if (people.error) throw people.error;
       return { role: membership.data.role, people: people.data };
-    },
-    async addPerson(person) {
-      const { error } = await client.from('people').insert(person);
-      if (error) throw error;
     },
   };
 }

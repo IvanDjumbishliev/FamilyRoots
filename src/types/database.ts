@@ -12,6 +12,7 @@ export type Database = {
       activity_logs: {
         Row: {
           actor_id: string | null;
+          changed_fields: string[];
           created_at: string;
           entity_id: string;
           entity_type: string;
@@ -23,6 +24,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           actor_id?: string | null;
+          changed_fields?: string[];
           created_at?: string;
           entity_id: string;
           entity_type: string;
@@ -33,6 +35,7 @@ export type Database = {
         };
         Update: {
           actor_id?: string | null;
+          changed_fields?: string[];
           created_at?: string;
           entity_id?: string;
           entity_type?: string;
@@ -363,52 +366,101 @@ export type Database = {
       };
       people: {
         Row: {
+          alternative_names: string[];
+          archived_at: string | null;
+          biography: string | null;
           birth_date: string | null;
           birth_date_approximate: boolean;
           birth_date_precision: Database['public']['Enums']['date_precision'];
+          birth_name: string | null;
+          birth_place: string | null;
           created_at: string;
           death_date: string | null;
           death_date_approximate: boolean;
           death_date_precision: Database['public']['Enums']['date_precision'];
+          death_place: string | null;
           display_name: string;
+          gender_identity: string | null;
+          given_names: string | null;
           id: string;
+          is_draft: boolean;
           living_status: Database['public']['Enums']['living_status'];
+          nationality: string | null;
           notes: string | null;
+          occupation: string | null;
+          profile_photo_id: string | null;
+          surnames: string | null;
           tree_id: string;
           updated_at: string;
+          verification_status: Database['public']['Enums']['verification_status'];
         };
         ComputedFields: never;
         Insert: {
+          alternative_names?: string[];
+          archived_at?: string | null;
+          biography?: string | null;
           birth_date?: string | null;
           birth_date_approximate?: boolean;
           birth_date_precision?: Database['public']['Enums']['date_precision'];
+          birth_name?: string | null;
+          birth_place?: string | null;
           created_at?: string;
           death_date?: string | null;
           death_date_approximate?: boolean;
           death_date_precision?: Database['public']['Enums']['date_precision'];
+          death_place?: string | null;
           display_name: string;
+          gender_identity?: string | null;
+          given_names?: string | null;
           id?: string;
+          is_draft?: boolean;
           living_status?: Database['public']['Enums']['living_status'];
+          nationality?: string | null;
           notes?: string | null;
+          occupation?: string | null;
+          profile_photo_id?: string | null;
+          surnames?: string | null;
           tree_id: string;
           updated_at?: string;
+          verification_status?: Database['public']['Enums']['verification_status'];
         };
         Update: {
+          alternative_names?: string[];
+          archived_at?: string | null;
+          biography?: string | null;
           birth_date?: string | null;
           birth_date_approximate?: boolean;
           birth_date_precision?: Database['public']['Enums']['date_precision'];
+          birth_name?: string | null;
+          birth_place?: string | null;
           created_at?: string;
           death_date?: string | null;
           death_date_approximate?: boolean;
           death_date_precision?: Database['public']['Enums']['date_precision'];
+          death_place?: string | null;
           display_name?: string;
+          gender_identity?: string | null;
+          given_names?: string | null;
           id?: string;
+          is_draft?: boolean;
           living_status?: Database['public']['Enums']['living_status'];
+          nationality?: string | null;
           notes?: string | null;
+          occupation?: string | null;
+          profile_photo_id?: string | null;
+          surnames?: string | null;
           tree_id?: string;
           updated_at?: string;
+          verification_status?: Database['public']['Enums']['verification_status'];
         };
         Relationships: [
+          {
+            foreignKeyName: 'people_profile_photo_fkey';
+            columns: ['tree_id', 'profile_photo_id', 'id'];
+            isOneToOne: false;
+            referencedRelation: 'media_assets';
+            referencedColumns: ['tree_id', 'id', 'person_id'];
+          },
           {
             foreignKeyName: 'people_tree_id_fkey';
             columns: ['tree_id'];
@@ -638,6 +690,27 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      add_person_source: {
+        Args: {
+          p_locator: string;
+          p_person_id: string;
+          p_title: string;
+          p_tree_id: string;
+          p_url: string;
+        };
+        Returns: string;
+      };
+      attach_person_photo: {
+        Args: {
+          p_content_type: string;
+          p_name: string;
+          p_path: string;
+          p_person_id: string;
+          p_size: number;
+          p_tree_id: string;
+        };
+        Returns: string;
+      };
       complete_family_onboarding: {
         Args: { p_display_name: string; p_tree_name: string };
         Returns: string;
