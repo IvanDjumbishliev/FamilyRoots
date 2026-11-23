@@ -1,4 +1,4 @@
-import { Redirect } from 'expo-router';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { ActionLink } from '@/components/ActionLink';
@@ -15,6 +15,7 @@ import { emailSchema } from '@/features/auth/validation';
 
 export default function LogIn() {
   const auth = useAuth();
+  const { next } = useLocalSearchParams<{ next?: string }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -22,7 +23,9 @@ export default function LogIn() {
   const emailInput = emailSchema.safeParse(email.trim());
   if (auth.kind === 'loading')
     return <AuthStatus title="Checking your account…" />;
-  if (auth.kind !== 'ready' || auth.session) return <Redirect href="/" />;
+  if (auth.kind !== 'ready') return <Redirect href="/" />;
+  if (auth.session)
+    return <Redirect href={next === 'invitations' ? '/invitations' : '/'} />;
   const client = auth.client;
 
   function submit() {

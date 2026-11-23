@@ -9,6 +9,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { Type } from '@/components/Type';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { ReviewProposal } from '@/features/collaboration/ReviewProposal';
 import { useSave } from '@/features/family/useSave';
 import { formatHistoricalDate } from '@/features/people/personForm';
 import { usePeopleQuery } from '@/features/people/usePeople';
@@ -229,6 +230,20 @@ function RelationshipCards({
                 </Type>
               )}
               {connection.notes && <Type>{connection.notes}</Type>}
+              {canEdit && connection.verification !== 'disputed' && (
+                <ReviewProposal
+                  treeId={treeId}
+                  target={
+                    connection.category === 'parent'
+                      ? 'parent_child_relationships'
+                      : connection.category === 'partnership'
+                        ? 'partnerships'
+                        : 'other_family_relationships'
+                  }
+                  id={connection.id}
+                  onSubmitted={reload}
+                />
+              )}
               {canEdit && (
                 <View
                   style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}
@@ -310,7 +325,14 @@ function RelationshipCards({
             personId={personId}
             people={data.people}
             connection={editor === 'new' ? undefined : editor}
-            save={(values) => repository.save(treeId, personId, values)}
+            save={(values) =>
+              repository.save(
+                treeId,
+                personId,
+                values,
+                editor === 'new' ? undefined : editor.updatedAt,
+              )
+            }
             onSaved={() => {
               setEditor(undefined);
               reload();

@@ -9,6 +9,7 @@ import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { Type } from '@/components/Type';
 import { ArchivePicker } from '@/features/archive/ArchivePicker';
+import { ReviewProposal } from '@/features/collaboration/ReviewProposal';
 import { useSave } from '@/features/family/useSave';
 import { Choices } from '@/features/people/Choices';
 import {
@@ -264,6 +265,18 @@ export function TimelineEditor({
             Couldn’t save the event. Check your access or reload if someone else
             edited it.
           </Type>
+        )}
+        {request.error && existing && (
+          <ReviewProposal
+            treeId={treeId}
+            target="life_events"
+            id={existing.event.id}
+            draft={{
+              title: value.title,
+              notes: value.notes,
+              place: value.place,
+            }}
+          />
         )}
         <Button
           label={request.saving ? 'Saving…' : 'Save event'}

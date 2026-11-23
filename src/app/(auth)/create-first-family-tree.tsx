@@ -1,4 +1,5 @@
-import { Redirect } from 'expo-router';
+import { ActionLink } from '@/components/ActionLink';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { Button } from '@/components/Button';
@@ -12,6 +13,7 @@ import { createAccountRepository } from '@/services/accountRepository';
 
 export default function CreateFirstFamilyTree() {
   const auth = useAuth();
+  const { invitedTree } = useLocalSearchParams<{ invitedTree?: string }>();
   if (auth.kind === 'loading')
     return <AuthStatus title="Checking your account…" />;
   if (auth.kind === 'demo') return <Redirect href="/" />;
@@ -26,7 +28,16 @@ export default function CreateFirstFamilyTree() {
       />
     );
   if (auth.account.treeId && auth.account.profile.display_name.trim())
-    return <Redirect href="/" />;
+    return (
+      <Redirect
+        href={
+          typeof invitedTree === 'string' &&
+          /^[0-9a-f-]{36}$/i.test(invitedTree)
+            ? { pathname: '/collaboration', params: { treeId: invitedTree } }
+            : '/'
+        }
+      />
+    );
 
   return (
     <OnboardingForm
@@ -99,6 +110,13 @@ function OnboardingForm({
           error={
             submitted && !tree.trim() ? 'Enter a family tree name.' : undefined
           }
+        />
+      )}
+      {needsTree && (
+        <ActionLink
+          href="/invitations"
+          label="I have a tree invitation"
+          variant="secondary"
         />
       )}
       <RequestError message={request.message} />

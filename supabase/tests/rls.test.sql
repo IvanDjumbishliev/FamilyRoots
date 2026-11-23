@@ -52,9 +52,8 @@ select is((select actor_id::text from public.activity_logs where entity_id = '30
 with change as (update public.family_trees set name = 'Illegal rename' returning id)
 select is((select count(*) from change),
   0::bigint, 'editor cannot rename the tree');
-with change as (update public.tree_memberships set role = 'owner' returning id)
-select is((select count(*) from change),
-  0::bigint, 'editor cannot escalate their role');
+select throws_ok($$update public.tree_memberships set role = 'owner'$$,
+  '42501', null, 'editor cannot escalate their role');
 select throws_ok($$insert into public.tree_memberships (tree_id, user_id, role)
   values ('20000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000004', 'editor')$$,
   '42501', null, 'editor cannot grant membership');
@@ -95,9 +94,8 @@ select throws_ok($$insert into public.people (tree_id, display_name)
   '42501', null, 'outsider cannot insert into another family’s tree');
 
 set local request.jwt.claims = '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
-with removed as (delete from public.tree_memberships where role = 'viewer' returning id)
-select is((select count(*) from removed),
-  1::bigint, 'owner can revoke a viewer');
+select lives_ok($$select public.manage_tree_member('20000000-0000-4000-8000-000000000001',
+  '10000000-0000-4000-8000-000000000003','viewer',true)$$, 'owner can revoke a viewer');
 set local request.jwt.claims = '{"sub":"10000000-0000-4000-8000-000000000003","role":"authenticated"}';
 select is((select count(*) from public.people), 0::bigint, 'revoked membership immediately loses database access');
 select is((select count(*) from storage.objects where bucket_id = 'family-media'), 0::bigint, 'revoked membership loses storage listing access');

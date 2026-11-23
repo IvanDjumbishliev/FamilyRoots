@@ -11,6 +11,8 @@ import { LoadingState } from '@/components/LoadingState';
 import { PageHeading } from '@/components/PageHeading';
 import { Screen } from '@/components/Screen';
 import { Type } from '@/components/Type';
+import { CollaborationThread } from '@/features/collaboration/Thread';
+import { ReviewProposal } from '@/features/collaboration/ReviewProposal';
 import { useSave } from '@/features/family/useSave';
 import { usePeopleQuery } from '@/features/people/usePeople';
 import { sourceForm } from '@/features/people/personForm';
@@ -70,6 +72,7 @@ function EventContent({
 }) {
   const router = useRouter();
   const [confirm, setConfirm] = useState(false);
+  const [discussion, setDiscussion] = useState<string>();
   const request = useSave();
   const { event, treeId, version } = result;
   const media = context.items.filter(
@@ -97,6 +100,9 @@ function EventContent({
         <Type variant="label">{status}</Type>
         {event.place && <Type>{event.place}</Type>}
         {event.notes && <Type>{event.notes}</Type>}
+        {context.canEdit && (
+          <ReviewProposal treeId={treeId} target="life_events" id={event.id} />
+        )}
         {context.canEdit && (
           <ActionLink
             href={{
@@ -179,6 +185,27 @@ function EventContent({
                       {cite.locator}
                     </Type>
                   ))}
+                <Button
+                  label={
+                    discussion === source.id
+                      ? 'Hide source discussion'
+                      : `Discuss ${source.title}`
+                  }
+                  variant="quiet"
+                  onPress={() =>
+                    setDiscussion(
+                      discussion === source.id ? undefined : source.id,
+                    )
+                  }
+                />
+                {discussion === source.id && (
+                  <CollaborationThread
+                    treeId={treeId}
+                    target="source_id"
+                    id={source.id}
+                    canEdit={context.canEdit}
+                  />
+                )}
                 {web && (
                   <Button
                     label={`Open source ${source.title}`}

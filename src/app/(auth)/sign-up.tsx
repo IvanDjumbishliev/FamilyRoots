@@ -1,4 +1,4 @@
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, useRouter, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { ActionLink } from '@/components/ActionLink';
@@ -17,6 +17,7 @@ import { emailSchema, passwordSchema } from '@/features/auth/validation';
 export default function SignUp() {
   const auth = useAuth();
   const router = useRouter();
+  const { next } = useLocalSearchParams<{ next?: string }>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -26,7 +27,8 @@ export default function SignUp() {
   if (auth.kind === 'loading')
     return <AuthStatus title="Checking your account…" />;
   if (auth.kind !== 'ready') return <Redirect href="/" />;
-  if (auth.session) return <Redirect href="/" />;
+  if (auth.session)
+    return <Redirect href={next === 'invitations' ? '/invitations' : '/'} />;
   const client = auth.client;
 
   function submit() {
@@ -42,7 +44,11 @@ export default function SignUp() {
           options: { emailRedirectTo: emailDestination('/verify-email') },
         });
         setPassword('');
-        router.replace('/verify-email');
+        router.replace(
+          next === 'invitations'
+            ? { pathname: '/verify-email', params: { next } }
+            : '/verify-email',
+        );
       },
       'Couldn’t send the request. Check your connection and try again.',
     );

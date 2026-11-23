@@ -69,6 +69,16 @@ export function WelcomeScreen() {
             </Type>
             {account.treeName && <Type>{account.treeName}</Type>}
             <ActionLink
+              href="/collaboration"
+              label="Open family collaboration"
+              variant="secondary"
+            />
+            <ActionLink
+              href="/invitations"
+              label="My tree invitations"
+              variant="quiet"
+            />
+            <ActionLink
               href="/timeline"
               label="Open family history timeline"
               variant="secondary"

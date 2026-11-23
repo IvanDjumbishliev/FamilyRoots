@@ -12,6 +12,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { PageHeading } from '@/components/PageHeading';
 import { Screen } from '@/components/Screen';
 import { Type } from '@/components/Type';
+import { CollaborationThread } from '@/features/collaboration/Thread';
 import { useSave } from '@/features/family/useSave';
 import { formatHistoricalDate } from '@/features/people/personForm';
 import { usePeopleQuery } from '@/features/people/usePeople';
@@ -191,6 +192,12 @@ function ItemContent({
           }}
         />
       )}
+      <CollaborationThread
+        treeId={item.tree_id}
+        target="archive_item_id"
+        id={item.id}
+        canEdit={context.role !== 'viewer'}
+      />
       <Dialog
         open={confirm}
         title="Remove this archive file?"
@@ -366,7 +373,8 @@ function Editor({
       />
       {save.error && (
         <Type tone="danger" accessibilityRole="alert">
-          Couldn’t save the changes. Check your access and try again.
+          Couldn’t save the changes. Reload the item to check for another
+          editor’s changes.
         </Type>
       )}
       <Button
@@ -376,7 +384,7 @@ function Editor({
           setSubmitted(true);
           if (parsed.success)
             void save.save(
-              () => repository.update(item.id, parsed.data),
+              () => repository.update(item.id, parsed.data, item.updated_at),
               onSaved,
             );
         }}

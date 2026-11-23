@@ -1,4 +1,4 @@
-import { Redirect } from 'expo-router';
+import { Redirect, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 import { ActionLink } from '@/components/ActionLink';
@@ -20,6 +20,7 @@ import { codeSchema, emailSchema } from '@/features/auth/validation';
 
 export default function VerifyEmail() {
   const auth = useAuth();
+  const { next } = useLocalSearchParams<{ next?: string }>();
   const request = useAuthRequest();
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -30,7 +31,9 @@ export default function VerifyEmail() {
   const codeInput = codeSchema.safeParse(code.trim());
   if (auth.kind === 'loading')
     return <AuthStatus title="Checking your account…" />;
-  if (auth.kind !== 'ready' || auth.session) return <Redirect href="/" />;
+  if (auth.kind !== 'ready') return <Redirect href="/" />;
+  if (auth.session)
+    return <Redirect href={next === 'invitations' ? '/invitations' : '/'} />;
   const client = auth.client;
 
   function verify() {

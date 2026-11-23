@@ -94,6 +94,11 @@ export function PeopleDirectory({
         />
       )}
       <ActionLink
+        href={{ pathname: '/collaboration', params: { treeId: tree } }}
+        label="Tree collaboration"
+        variant="secondary"
+      />
+      <ActionLink
         href={{ pathname: '/timeline', params: { treeId: tree } }}
         label="Family history timeline"
         variant="secondary"

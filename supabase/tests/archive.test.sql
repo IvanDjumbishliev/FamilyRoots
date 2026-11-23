@@ -57,9 +57,12 @@ select is((select count(*) from archive_items),0::bigint,'outsider sees no archi
 select is((select count(*) from storage.objects where bucket_id='family-archive'),0::bigint,'outsider sees no archived objects');
 
 set local request.jwt.claims = '{"sub":"10000000-0000-4000-8000-000000000001","role":"authenticated"}';
-select lives_ok($$select update_archive_item(
+select throws_ok($$select update_versioned_archive_item((select id from archive_items),
+  '{"title":"Stale letter"}','{}','2000-01-01')$$,
+ 'P0002',null,'archive metadata rejects stale edits');
+select lives_ok($$select update_versioned_archive_item(
   (select id from archive_items),'{"title":"Edited letter","recordedOn":"1910-01-01","precision":"year","approximate":true}',
-  array['30000000-0000-4000-8000-000000000001'::uuid])$$,'owner can update metadata and replace links atomically');
+  array['30000000-0000-4000-8000-000000000001'::uuid],(select updated_at from archive_items))$$,'owner can update metadata and replace links atomically');
 select is((select updated_by::text from archive_items),'10000000-0000-4000-8000-000000000001','last editor is recorded');
 select is((select count(*) from activity_logs where entity_type='archive_items'),2::bigint,'upload and edit are audited');
 

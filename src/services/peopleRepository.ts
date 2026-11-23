@@ -94,7 +94,7 @@ export function createPeopleRepository(client: BackendClient, userId: string) {
       const [sources, activity, photo] = await Promise.all([
         client
           .from('source_citations')
-          .select('id, locator, sources(title, reference_url)')
+          .select('id, source_id, locator, sources(title, reference_url)')
           .eq('tree_id', person.tree_id)
           .eq('person_id', person.id),
         client

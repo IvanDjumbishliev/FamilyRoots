@@ -15,6 +15,8 @@ import { TextField } from '@/components/TextField';
 import { Type } from '@/components/Type';
 import { MemoryFileField } from '@/features/family/MemoryFileField';
 import type { MemoryFile } from '@/features/family/memoryFile';
+import { CollaborationThread } from '@/features/collaboration/Thread';
+import { ReviewProposal } from '@/features/collaboration/ReviewProposal';
 import { useSave } from '@/features/family/useSave';
 import {
   formatHistoricalDate,
@@ -99,6 +101,7 @@ function Profile({
   );
   const details = usePeopleQuery(read);
   const [confirm, setConfirm] = useState(false);
+  const [sourceDiscussion, setSourceDiscussion] = useState<string>();
   const [photoError, setPhotoError] = useState(false);
   const request = useSave();
   const editable = canEdit && !person.archived_at;
@@ -200,6 +203,22 @@ function Profile({
         )}
       </Card>
 
+      {editable && (
+        <Card>
+          <ReviewProposal
+            treeId={person.tree_id}
+            target="people"
+            id={person.id}
+          />
+        </Card>
+      )}
+      <CollaborationThread
+        treeId={person.tree_id}
+        target="person_id"
+        id={person.id}
+        canEdit={editable}
+      />
+
       <PersonRelationships
         personId={person.id}
         treeId={person.tree_id}
@@ -236,6 +255,33 @@ function Profile({
                 <Type tone="muted">{citation.sources.reference_url}</Type>
               )}
               {citation.locator && <Type tone="muted">{citation.locator}</Type>}
+              {citation.sources && (
+                <>
+                  <Button
+                    label={
+                      sourceDiscussion === citation.source_id
+                        ? 'Hide source discussion'
+                        : `Discuss ${citation.sources.title}`
+                    }
+                    variant="quiet"
+                    onPress={() =>
+                      setSourceDiscussion(
+                        sourceDiscussion === citation.source_id
+                          ? undefined
+                          : citation.source_id,
+                      )
+                    }
+                  />
+                  {sourceDiscussion === citation.source_id && (
+                    <CollaborationThread
+                      treeId={person.tree_id}
+                      target="source_id"
+                      id={citation.source_id}
+                      canEdit={editable}
+                    />
+                  )}
+                </>
+              )}
             </View>
           ))
         ) : (

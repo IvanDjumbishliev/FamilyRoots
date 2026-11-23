@@ -62,6 +62,7 @@ export function createRelationshipRepository(client: BackendClient) {
         ...parents.map((row) => ({
           category: 'parent' as const,
           id: row.id,
+          updatedAt: row.updated_at,
           parent: row.parent_id,
           child: row.child_id,
           kind: row.kind,
@@ -72,6 +73,7 @@ export function createRelationshipRepository(client: BackendClient) {
         ...partners.map((row) => ({
           category: 'partnership' as const,
           id: row.id,
+          updatedAt: row.updated_at,
           a: row.person_a_id,
           b: row.person_b_id,
           kind: row.kind,
@@ -89,6 +91,7 @@ export function createRelationshipRepository(client: BackendClient) {
         ...other.map((row) => ({
           category: 'other' as const,
           id: row.id,
+          updatedAt: row.updated_at,
           a: row.person_a_id,
           b: row.person_b_id,
           label: row.label,
@@ -99,11 +102,17 @@ export function createRelationshipRepository(client: BackendClient) {
       ];
       return { people, connections };
     },
-    async save(treeId: string, personId: string, values: Json) {
-      const { error } = await client.rpc('save_family_connection', {
-        p_tree_id: treeId,
-        p_person_id: personId,
+    async save(
+      treeId: string,
+      personId: string,
+      values: Json,
+      version?: string,
+    ) {
+      const { error } = await client.rpc('save_versioned_family_connection', {
+        p_tree: treeId,
+        p_person: personId,
         p_connection: values,
+        p_version: version,
       });
       if (error) throw error;
     },
@@ -114,13 +123,13 @@ export function createRelationshipRepository(client: BackendClient) {
           : connection.category === 'partnership'
             ? 'partnerships'
             : 'other_family_relationships';
-      const { error } = await client
+      const deletion = client
         .from(table)
         .delete()
         .eq('tree_id', treeId)
-        .eq('id', connection.id)
-        .select('id')
-        .single();
+        .eq('id', connection.id);
+      if (connection.updatedAt) deletion.eq('updated_at', connection.updatedAt);
+      const { error } = await deletion.select('id').single();
       if (error) throw error;
     },
   };
@@ -135,6 +144,8 @@ export function connectionError(error: unknown) {
     ) {
       return 'This would make a person their own ancestor. Check the parent and child direction.';
     }
+    if (error.code === 'P0002' || error.code === 'PGRST116')
+      return 'This connection changed. Reload it to review the latest version.';
     if (error.code === '23505') return 'This connection already exists.';
     if (error.code === '42501')
       return 'You don’t have permission to change this connection.';

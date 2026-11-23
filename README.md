@@ -195,3 +195,27 @@ Owners and editors can add and edit events, select multiple people, attach photo
 Use **Historical context** for background notes. These appear in a separate section from family events and their verification labels. The `timelineForBook` function in `src/features/timeline/timelineModel.ts` exposes chronological sections, event dates, verification status, and evidence IDs for later book use.
 
 Apply the latest migration before using connected timeline editing. No new credentials or environment variables are required.
+
+## Phase 11 · Family collaboration
+
+Open **Family collaboration** from Home or Family Tree. Owners can send and cancel invitations, assign Editor or Viewer, and revoke access. Editors can post on profiles, archive items, and source citations, propose supported corrections, and flag disputed relationships. Owners resolve reviews after comparing the original, current, and proposed values. Recent changes show the authenticated editor and time, with read markers for each member.
+
+The invitation email and the pending inbox omit the tree name and its records. The recipient must sign in with the matching verified email address. Invitations expire after seven days and can be accepted or declined once. If email delivery fails, the invitation remains in **My tree invitations** for the verified recipient. Access starts on acceptance. Before sending, the owner must confirm they have permission to share the tree’s living relatives’ information with that recipient. Membership is tree-wide, so keep material without sharing consent in a separate private tree. Revocation blocks subsequent database and storage access. Previously issued archive and profile photo URLs can remain usable for up to 60 seconds. Keep Supabase Auth email confirmation enabled so only the verified owner of an address can accept an invitation.
+
+Apply the migration and deploy the Edge Function to your linked Supabase project:
+
+```sh
+npx supabase@3.2.0 db push
+npx supabase@3.2.0 functions deploy collaboration
+```
+
+Set these **Edge Function secrets** in Supabase. The application continues to use the same public environment variables in `.env.example`.
+
+| Secret                  | Value                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `COLLAB_APP_URL`        | The HTTPS origin of the deployed FamilyRoots web app. Configure your host to serve the app at `/invitations`. |
+| `COLLAB_EMAIL_FROM`     | Sender address on a verified Resend domain.                                                                   |
+| `COLLAB_RESEND_API_KEY` | Resend key with permission to send mail.                                                                      |
+| `COLLAB_EMAIL_API_URL`  | Optional operator-controlled Resend-compatible send endpoint for local integration tests.                     |
+
+For local development, pass an untracked secrets file to `npx supabase@3.2.0 functions serve collaboration --env-file path/to/collaboration.env`. The local invite inbox works without delivery secrets. Invitation email is the external notification channel. Review and change notifications appear in the app when refreshing or opening the collaboration screen.

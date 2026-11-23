@@ -8,6 +8,7 @@ import { PageHeading } from '@/components/PageHeading';
 import { Screen } from '@/components/Screen';
 import { TextField } from '@/components/TextField';
 import { Type } from '@/components/Type';
+import { ReviewProposal } from '@/features/collaboration/ReviewProposal';
 import { useSave } from '@/features/family/useSave';
 import { Choices } from '@/features/people/Choices';
 import {
@@ -172,6 +173,21 @@ export function PersonEditor({
             Couldn’t save. Check your access or reopen the profile if someone
             else edited it.
           </Type>
+        )}
+        {request.error && person && (
+          <ReviewProposal
+            treeId={person.tree_id}
+            target="people"
+            id={person.id}
+            draft={{
+              biography: values.biography,
+              notes: values.notes,
+              nationality: values.nationality,
+              occupation: values.occupation,
+              birth_place: values.birthPlace,
+              death_place: values.deathPlace,
+            }}
+          />
         )}
         <Button
           label={request.saving ? 'Saving…' : 'Save person'}

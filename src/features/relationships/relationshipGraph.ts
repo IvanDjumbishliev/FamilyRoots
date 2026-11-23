@@ -21,6 +21,7 @@ export type Precision = 'unknown' | 'year' | 'month' | 'day';
 
 type Evidence = {
   id: string;
+  updatedAt?: string;
   provenance: Provenance;
   verification: Verification;
   notes: string | null;

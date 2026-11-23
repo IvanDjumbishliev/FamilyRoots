@@ -145,11 +145,12 @@ export function createArchiveRepository(client: BackendClient, userId: string) {
       if (!data?.id) throw new Error('Archive response was incomplete.');
       return data;
     },
-    async update(itemId: string, values: ArchiveMetadata) {
+    async update(itemId: string, values: ArchiveMetadata, version: string) {
       const { meta, people } = serializeArchiveMetadata(values);
-      const { error } = await client.rpc('update_archive_item', {
+      const { error } = await client.rpc('update_versioned_archive_item', {
         p_id: itemId,
         p_meta: meta,
+        p_version: version,
         p_people: people,
       });
       if (error) throw error;

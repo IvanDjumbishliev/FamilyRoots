@@ -41,3 +41,6 @@ content_path = "./supabase/templates/recovery.html"
 
 [functions.archive]
 verify_jwt = false
+
+[functions.collaboration]
+verify_jwt = false

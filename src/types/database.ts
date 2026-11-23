@@ -206,6 +206,79 @@ export type Database = {
           },
         ];
       };
+      collaboration_comments: {
+        Row: {
+          archive_item_id: string | null;
+          author_id: string | null;
+          body: string;
+          created_at: string;
+          id: string;
+          person_id: string | null;
+          source_id: string | null;
+          tree_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          archive_item_id?: string | null;
+          author_id?: string | null;
+          body: string;
+          created_at?: string;
+          id?: string;
+          person_id?: string | null;
+          source_id?: string | null;
+          tree_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          archive_item_id?: string | null;
+          author_id?: string | null;
+          body?: string;
+          created_at?: string;
+          id?: string;
+          person_id?: string | null;
+          source_id?: string | null;
+          tree_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'collaboration_comments_author_id_fkey';
+            columns: ['author_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'collaboration_comments_tree_id_archive_item_id_fkey';
+            columns: ['tree_id', 'archive_item_id'];
+            isOneToOne: false;
+            referencedRelation: 'archive_items';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'collaboration_comments_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'collaboration_comments_tree_id_person_id_fkey';
+            columns: ['tree_id', 'person_id'];
+            isOneToOne: false;
+            referencedRelation: 'people';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'collaboration_comments_tree_id_source_id_fkey';
+            columns: ['tree_id', 'source_id'];
+            isOneToOne: false;
+            referencedRelation: 'sources';
+            referencedColumns: ['tree_id', 'id'];
+          },
+        ];
+      };
       family_trees: {
         Row: {
           created_at: string;
@@ -926,6 +999,73 @@ export type Database = {
           },
         ];
       };
+      tree_invitations: {
+        Row: {
+          consent_confirmed_at: string;
+          created_at: string;
+          delivery_attempt: string | null;
+          email: string;
+          expires_at: string;
+          id: string;
+          invited_by: string | null;
+          last_attempt_at: string | null;
+          responded_at: string | null;
+          role: Database['public']['Enums']['tree_role'];
+          sent_at: string | null;
+          status: string;
+          tree_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          consent_confirmed_at?: string;
+          created_at?: string;
+          delivery_attempt?: string | null;
+          email: string;
+          expires_at?: string;
+          id?: string;
+          invited_by?: string | null;
+          last_attempt_at?: string | null;
+          responded_at?: string | null;
+          role: Database['public']['Enums']['tree_role'];
+          sent_at?: string | null;
+          status?: string;
+          tree_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          consent_confirmed_at?: string;
+          created_at?: string;
+          delivery_attempt?: string | null;
+          email?: string;
+          expires_at?: string;
+          id?: string;
+          invited_by?: string | null;
+          last_attempt_at?: string | null;
+          responded_at?: string | null;
+          role?: Database['public']['Enums']['tree_role'];
+          sent_at?: string | null;
+          status?: string;
+          tree_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tree_invitations_invited_by_fkey';
+            columns: ['invited_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tree_invitations_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       tree_memberships: {
         Row: {
           created_at: string;
@@ -969,6 +1109,117 @@ export type Database = {
           },
         ];
       };
+      tree_reviews: {
+        Row: {
+          base_value: string | null;
+          created_at: string;
+          field: string;
+          id: string;
+          proposed_by: string | null;
+          proposed_value: string | null;
+          reason: string;
+          resolution_note: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          status: string;
+          target_id: string;
+          target_type: string;
+          tree_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          base_value?: string | null;
+          created_at?: string;
+          field: string;
+          id?: string;
+          proposed_by?: string | null;
+          proposed_value?: string | null;
+          reason: string;
+          resolution_note?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+          target_id: string;
+          target_type: string;
+          tree_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          base_value?: string | null;
+          created_at?: string;
+          field?: string;
+          id?: string;
+          proposed_by?: string | null;
+          proposed_value?: string | null;
+          reason?: string;
+          resolution_note?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+          target_id?: string;
+          target_type?: string;
+          tree_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tree_reviews_proposed_by_fkey';
+            columns: ['proposed_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tree_reviews_resolved_by_fkey';
+            columns: ['resolved_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tree_reviews_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      tree_update_reads: {
+        Row: {
+          read_at: string;
+          tree_id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          read_at?: string;
+          tree_id: string;
+          user_id: string;
+        };
+        Update: {
+          read_at?: string;
+          tree_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tree_update_reads_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tree_update_reads_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -995,6 +1246,10 @@ export type Database = {
         };
         Returns: string;
       };
+      cancel_tree_invitation: {
+        Args: { p_id: string; p_tree: string };
+        Returns: undefined;
+      };
       claim_archive_upload: {
         Args: {
           p_actor: string;
@@ -1014,9 +1269,70 @@ export type Database = {
         Args: { p_display_name: string; p_tree_name: string };
         Returns: string;
       };
+      get_tree_collaboration: { Args: { p_tree: string }; Returns: Json };
+      inspect_tree_review: { Args: { p_id: string }; Returns: Json };
+      list_my_tree_invitations: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          created_at: string;
+          expires_at: string;
+          id: string;
+          role: Database['public']['Enums']['tree_role'];
+        }[];
+      };
+      manage_tree_member: {
+        Args: {
+          p_member: string;
+          p_remove?: boolean;
+          p_role: Database['public']['Enums']['tree_role'];
+          p_tree: string;
+        };
+        Returns: undefined;
+      };
+      mark_tree_updates_read: {
+        Args: { p_through: string; p_tree: string };
+        Returns: undefined;
+      };
+      propose_tree_review: {
+        Args: {
+          p_field: string;
+          p_proposed: string;
+          p_reason: string;
+          p_target: string;
+          p_target_type: string;
+          p_tree: string;
+        };
+        Returns: string;
+      };
+      record_invitation_delivery: {
+        Args: { p_attempt: string; p_id: string };
+        Returns: undefined;
+      };
       remove_archive_item: {
         Args: { p_actor: string; p_id: string };
         Returns: string[];
+      };
+      request_tree_invitation: {
+        Args: {
+          p_consent: boolean;
+          p_email: string;
+          p_role: Database['public']['Enums']['tree_role'];
+          p_tree: string;
+        };
+        Returns: Json;
+      };
+      resolve_tree_review: {
+        Args: {
+          p_decision: string;
+          p_id: string;
+          p_note: string;
+          p_version?: string;
+        };
+        Returns: undefined;
+      };
+      respond_to_tree_invitation: {
+        Args: { p_accept: boolean; p_id: string };
+        Returns: string;
       };
       save_family_connection: {
         Args: { p_connection: Json; p_person_id: string; p_tree_id: string };
@@ -1026,8 +1342,26 @@ export type Database = {
         Args: { p_payload: Json; p_tree: string };
         Returns: string;
       };
+      save_versioned_family_connection: {
+        Args: {
+          p_connection: Json;
+          p_person: string;
+          p_tree: string;
+          p_version?: string;
+        };
+        Returns: string;
+      };
       update_archive_item: {
         Args: { p_id: string; p_meta: Json; p_people: string[] };
+        Returns: undefined;
+      };
+      update_versioned_archive_item: {
+        Args: {
+          p_id: string;
+          p_meta: Json;
+          p_people: string[];
+          p_version: string;
+        };
         Returns: undefined;
       };
     };
