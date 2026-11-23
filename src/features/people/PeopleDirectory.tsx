@@ -93,6 +93,11 @@ export function PeopleDirectory({
           label="Add Person"
         />
       )}
+      <ActionLink
+        href={{ pathname: '/timeline', params: { treeId: tree } }}
+        label="Family history timeline"
+        variant="secondary"
+      />
       <Choices
         label="Family tree workspace"
         value={section}

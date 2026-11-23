@@ -43,6 +43,11 @@ function DemoTree() {
         }
       />
       <ActionLink href="/family-tree/add" icon="add" label="Add Person" />
+      <ActionLink
+        href="/timeline"
+        label="Family history timeline"
+        variant="secondary"
+      />
       <TreeExplorer
         key={workspace}
         people={data.people}

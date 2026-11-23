@@ -242,11 +242,80 @@ export type Database = {
           },
         ];
       };
+      life_event_archive_items: {
+        Row: {
+          event_id: string;
+          item_id: string;
+          tree_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          event_id: string;
+          item_id: string;
+          tree_id: string;
+        };
+        Update: {
+          event_id?: string;
+          item_id?: string;
+          tree_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'life_event_archive_items_tree_id_event_id_fkey';
+            columns: ['tree_id', 'event_id'];
+            isOneToOne: false;
+            referencedRelation: 'life_events';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'life_event_archive_items_tree_id_item_id_fkey';
+            columns: ['tree_id', 'item_id'];
+            isOneToOne: false;
+            referencedRelation: 'archive_items';
+            referencedColumns: ['tree_id', 'id'];
+          },
+        ];
+      };
+      life_event_people: {
+        Row: {
+          event_id: string;
+          person_id: string;
+          tree_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          event_id: string;
+          person_id: string;
+          tree_id: string;
+        };
+        Update: {
+          event_id?: string;
+          person_id?: string;
+          tree_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'life_event_people_tree_id_event_id_fkey';
+            columns: ['tree_id', 'event_id'];
+            isOneToOne: false;
+            referencedRelation: 'life_events';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'life_event_people_tree_id_person_id_fkey';
+            columns: ['tree_id', 'person_id'];
+            isOneToOne: false;
+            referencedRelation: 'people';
+            referencedColumns: ['tree_id', 'id'];
+          },
+        ];
+      };
       life_events: {
         Row: {
           created_at: string;
           date_approximate: boolean;
           date_precision: Database['public']['Enums']['date_precision'];
+          entry_kind: string;
           event_type: string;
           id: string;
           notes: string | null;
@@ -256,12 +325,14 @@ export type Database = {
           title: string;
           tree_id: string;
           updated_at: string;
+          verification_status: Database['public']['Enums']['verification_status'];
         };
         ComputedFields: never;
         Insert: {
           created_at?: string;
           date_approximate?: boolean;
           date_precision?: Database['public']['Enums']['date_precision'];
+          entry_kind?: string;
           event_type: string;
           id?: string;
           notes?: string | null;
@@ -271,11 +342,13 @@ export type Database = {
           title: string;
           tree_id: string;
           updated_at?: string;
+          verification_status?: Database['public']['Enums']['verification_status'];
         };
         Update: {
           created_at?: string;
           date_approximate?: boolean;
           date_precision?: Database['public']['Enums']['date_precision'];
+          entry_kind?: string;
           event_type?: string;
           id?: string;
           notes?: string | null;
@@ -285,6 +358,7 @@ export type Database = {
           title?: string;
           tree_id?: string;
           updated_at?: string;
+          verification_status?: Database['public']['Enums']['verification_status'];
         };
         Relationships: [
           {
@@ -946,6 +1020,10 @@ export type Database = {
       };
       save_family_connection: {
         Args: { p_connection: Json; p_person_id: string; p_tree_id: string };
+        Returns: string;
+      };
+      save_timeline_event: {
+        Args: { p_payload: Json; p_tree: string };
         Returns: string;
       };
       update_archive_item: {

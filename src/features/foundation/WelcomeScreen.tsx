@@ -69,6 +69,11 @@ export function WelcomeScreen() {
             </Type>
             {account.treeName && <Type>{account.treeName}</Type>}
             <ActionLink
+              href="/timeline"
+              label="Open family history timeline"
+              variant="secondary"
+            />
+            <ActionLink
               href="/settings"
               label="View connected family trees"
               variant="secondary"
@@ -169,6 +174,13 @@ export function WelcomeScreen() {
           <Type variant="heading" accessibilityRole="header">
             Family history timeline
           </Type>
+          {!account?.treeId && (
+            <ActionLink
+              href="/timeline"
+              label="Open family history timeline"
+              variant="quiet"
+            />
+          )}
           {timeline.length ? (
             timeline.map((event) => (
               <View key={event.id} style={{ flexDirection: 'row', gap: 12 }}>

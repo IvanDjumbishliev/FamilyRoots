@@ -185,3 +185,13 @@ npx supabase@3.2.0 functions deploy archive
 ```
 
 For local development, start the Supabase stack and, if the function runtime is not running, run `npx supabase@3.2.0 functions serve archive` from the repository root. Run `npx supabase@3.2.0 test db --local` for the archive and authorization suites. Supabase provides the function's server-only environment. The app still uses only the project URL and publishable key. The function verifies the caller's user JWT through Supabase Auth and checks the tree role before using the server-only Storage capability.
+
+## Family history timeline
+
+Open **Family history timeline** from Home or Family Tree. The connected timeline lists saved events oldest first, groups them by decade or century, and displays undated entries separately. A partial date sorts by the first day of its known period and displays only the precision entered. Approximate dates are labeled. Date range filters use inclusive years and exclude undated records by default. The branch filter follows recorded links from the selected person to their descendants.
+
+Owners and editors can add and edit events, select multiple people, attach photos and documents already in Family Archive, and cite existing or new sources. Open an event to follow its evidence and people links. Removing an event also removes its associations. The people, archive files, and source records stay in the tree. Viewers can read authorized timeline records.
+
+Use **Historical context** for background notes. These appear in a separate section from family events and their verification labels. The `timelineForBook` function in `src/features/timeline/timelineModel.ts` exposes chronological sections, event dates, verification status, and evidence IDs for later book use.
+
+Apply the latest migration before using connected timeline editing. No new credentials or environment variables are required.
