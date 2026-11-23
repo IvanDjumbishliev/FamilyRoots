@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Image, View } from 'react-native';
 import { z } from 'zod';
@@ -31,10 +32,13 @@ import type {
 export function PersonDetail({
   repository,
   personId,
+  addRelative,
 }: {
   repository: PeopleRepository;
   personId: string;
+  addRelative?: boolean;
 }) {
+  const router = useRouter();
   const read = useCallback(
     () => repository.person(personId),
     [repository, personId],
@@ -64,6 +68,8 @@ export function PersonDetail({
           canEdit={result.data.canEdit}
           repository={repository}
           reload={result.reload}
+          addRelative={addRelative}
+          clearAddRelative={() => router.setParams({ addRelative: undefined })}
         />
       ) : (
         <LoadingState label="Loading person…" />
@@ -77,11 +83,15 @@ function Profile({
   canEdit,
   repository,
   reload,
+  addRelative,
+  clearAddRelative,
 }: {
   person: ConnectedPerson;
   canEdit: boolean;
   repository: PeopleRepository;
   reload: () => void;
+  addRelative?: boolean;
+  clearAddRelative: () => void;
 }) {
   const read = useCallback(
     () => repository.details(person),
@@ -194,6 +204,8 @@ function Profile({
         personId={person.id}
         treeId={person.tree_id}
         canEdit={editable}
+        addRelative={addRelative}
+        clearAddRelative={clearAddRelative}
       />
 
       {editable && (

@@ -156,3 +156,11 @@ Sign in, open **Family Tree**, and choose a person. Use **Relationships → Add 
 A person can have multiple partnerships. Leave unknown parents unlinked and unknown dates blank. Partnership dates accept year, month, or day precision and an independent approximate marker. FamilyRoots AI derives shared-parent siblings, grandparents, grandchildren, ancestry, and generation levels from biological and adoptive links. Step, foster, guardian, partner, and other recorded links can contribute to **Find relationship path** without implying ancestry. Disputed and AI-suggested links are visible as recorded evidence and excluded from derived results.
 
 Apply the latest Supabase migration for the connected feature. Viewer access remains read-only. PostgreSQL checks parent-child changes for cycles and serializes concurrent ancestry changes in the same tree. No new environment variables or credentials are required.
+
+## Interactive family tree
+
+Open **Family Tree** to explore the diagram. Selecting a card opens its profile. Search by name or alias and choose **Focus** to move the diagram to that person. The focused person sets the starting point for **Ancestors** and **Descendants**. Use **Collapse branch** or **Expand branch** to change what is shown. A shared relative stays visible when another expanded branch still reaches them.
+
+Drag to pan and pinch or scroll to zoom. On the web, tab to the diagram and use the arrow keys and + or −. **Fit tree** shows the full current view, and **Center focused person** returns to the selection. Choose **Accessible list** for profiles and relationship descriptions grouped by generation. **People directory** still provides connected draft, archive, and living-status filters.
+
+Owners and editors can choose **Add relative** to open relationship editing for the focused person. Returning to the tree reloads connections. Viewers can explore authorized trees. With Supabase unset, the sample workspace shows more than 100 fictional people across several generations. The empty demo and any demo edits stay local to the app session. No migration or new environment variables are required for this phase.

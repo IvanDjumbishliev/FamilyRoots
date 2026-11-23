@@ -1,17 +1,14 @@
 import { useLocalSearchParams } from 'expo-router';
+import { useMemo } from 'react';
 
 import { ActionLink } from '@/components/ActionLink';
-import { Card } from '@/components/Card';
 import { PageHeading } from '@/components/PageHeading';
 import { Screen } from '@/components/Screen';
-import { State } from '@/components/State';
-import { Type } from '@/components/Type';
-import { groupGenerations } from '@/features/family/familySummary';
-import { PersonList } from '@/features/family/PersonList';
 import { useFamily } from '@/features/family/useFamily';
-
 import { PeopleDirectory } from '@/features/people/PeopleDirectory';
 import { usePeople } from '@/features/people/usePeople';
+import { demoTree } from '@/features/tree/demoTree';
+import { TreeExplorer } from '@/features/tree/TreeExplorer';
 import { isRecordId } from '@/services/peopleRepository';
 
 export default function TreeScreen() {
@@ -30,34 +27,29 @@ export default function TreeScreen() {
 }
 
 function DemoTree() {
-  const { snapshot } = useFamily();
-  const generations = groupGenerations(snapshot.people);
-
+  const { snapshot, workspace } = useFamily();
+  const data = useMemo(
+    () => demoTree(snapshot, workspace),
+    [snapshot, workspace],
+  );
   return (
     <Screen>
       <PageHeading
         title="Family Tree"
-        description="Family members grouped by generation."
+        description={
+          workspace === 'sample'
+            ? 'Explore a fictional family with more than 100 people.'
+            : 'Build a tree in this demo session.'
+        }
       />
       <ActionLink href="/family-tree/add" icon="add" label="Add Person" />
-      {generations.length ? (
-        generations.map(([generation, people]) => (
-          <Card key={generation}>
-            <Type variant="heading" accessibilityRole="header">
-              Generation {generation}
-            </Type>
-            <PersonList people={people} />
-          </Card>
-        ))
-      ) : (
-        <Card>
-          <State
-            kind="empty"
-            title="Start with one person"
-            message="Add yourself or a relative. Use generation 1 for the oldest generation you know."
-          />
-        </Card>
-      )}
+      <TreeExplorer
+        key={workspace}
+        people={data.people}
+        connections={data.connections}
+        canEdit
+        isDemo
+      />
     </Screen>
   );
 }

@@ -5,6 +5,8 @@ export type NewPerson = {
   generation: number;
   birthYear?: number;
   relation?: string;
+  relativeTo?: string;
+  relativeDirection?: 'parent' | 'child';
 };
 export type Person = NewPerson & { id: string; createdAt: string };
 export type NewMemory = { name: string; uri: string; mimeType: string };

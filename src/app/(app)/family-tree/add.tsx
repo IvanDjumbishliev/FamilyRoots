@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { Card } from '@/components/Card';
 import { PageHeading } from '@/components/PageHeading';
 import { Screen } from '@/components/Screen';
+import { Choices } from '@/features/people/Choices';
+import { demoTree } from '@/features/tree/demoTree';
 import { TextField } from '@/components/TextField';
 import { FormActions } from '@/features/family/FormActions';
 import { useFamily } from '@/features/family/useFamily';
@@ -18,11 +20,18 @@ import { isRecordId, type PeopleRepository } from '@/services/peopleRepository';
 
 export default function AddPersonScreen() {
   const { repository, firstTree } = usePeople();
-  const { treeId } = useLocalSearchParams<{ treeId?: string }>();
+  const { treeId, relativeTo } = useLocalSearchParams<{
+    treeId?: string;
+    relativeTo?: string;
+  }>();
   const target = isRecordId(treeId) ? treeId : firstTree;
   if (repository && target)
     return <AddConnectedPerson repository={repository} treeId={target} />;
-  return <AddDemoPerson />;
+  return (
+    <AddDemoPerson
+      relativeTo={typeof relativeTo === 'string' ? relativeTo : undefined}
+    />
+  );
 }
 
 function AddConnectedPerson({
@@ -65,10 +74,16 @@ function AddConnectedPerson({
   );
 }
 
-function AddDemoPerson() {
+function AddDemoPerson({ relativeTo }: { relativeTo?: string }) {
   const { repository, workspace, snapshot } = useFamily();
   const router = useRouter();
   const { save, saving, error } = useSave();
+  const relative = relativeTo
+    ? demoTree(snapshot, workspace).people.find(
+        (person) => person.id === relativeTo,
+      )
+    : undefined;
+  const [direction, setDirection] = useState<'parent' | 'child'>('child');
   const [name, setName] = useState('');
   const [generation, setGeneration] = useState('1');
   const [birthYear, setBirthYear] = useState('');
@@ -117,7 +132,12 @@ function AddDemoPerson() {
     setSubmitted(true);
     if (result.success)
       void save(
-        () => repository.addPerson(workspace, result.data),
+        () =>
+          repository.addPerson(workspace, {
+            ...result.data,
+            relativeTo: relative?.id,
+            relativeDirection: relative ? direction : undefined,
+          }),
         () => router.dismissTo('/family-tree'),
       );
   }
@@ -125,10 +145,21 @@ function AddDemoPerson() {
   return (
     <Screen>
       <PageHeading
-        title="Add Person"
+        title={relative ? `Add relative to ${relative.name}` : 'Add Person'}
         description={`Add a relative to ${snapshot.familyName === 'Your family' ? 'your family' : snapshot.familyName.toLowerCase()}.`}
       />
       <Card>
+        {relative && (
+          <Choices
+            label="Relationship to selected person"
+            value={direction}
+            onChange={setDirection}
+            choices={[
+              { value: 'child', label: 'Child' },
+              { value: 'parent', label: 'Parent' },
+            ]}
+          />
+        )}
         <TextField
           label="Full name"
           value={name}

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 
 import { ActionLink } from '@/components/ActionLink';
@@ -30,10 +30,14 @@ export function PersonRelationships({
   personId,
   treeId,
   canEdit,
+  addRelative,
+  clearAddRelative,
 }: {
   personId: string;
   treeId: string;
   canEdit: boolean;
+  addRelative?: boolean;
+  clearAddRelative?: () => void;
 }) {
   const auth = useAuth();
   const client = auth.kind === 'ready' ? auth.client : undefined;
@@ -47,6 +51,8 @@ export function PersonRelationships({
       treeId={treeId}
       canEdit={canEdit}
       repository={repository}
+      addRelative={addRelative}
+      clearAddRelative={clearAddRelative}
     />
   ) : null;
 }
@@ -56,11 +62,15 @@ function Connections({
   treeId,
   canEdit,
   repository,
+  addRelative,
+  clearAddRelative,
 }: {
   personId: string;
   treeId: string;
   canEdit: boolean;
   repository: RelationshipRepository;
+  addRelative?: boolean;
+  clearAddRelative?: () => void;
 }) {
   const read = useCallback(() => repository.read(treeId), [repository, treeId]);
   const query = usePeopleQuery(read);
@@ -84,6 +94,8 @@ function Connections({
       canEdit={canEdit}
       repository={repository}
       data={query.data}
+      addRelative={addRelative}
+      clearAddRelative={clearAddRelative}
       reload={query.reload}
     />
   );
@@ -96,6 +108,8 @@ function RelationshipCards({
   repository,
   data,
   reload,
+  addRelative,
+  clearAddRelative,
 }: {
   personId: string;
   treeId: string;
@@ -103,8 +117,16 @@ function RelationshipCards({
   repository: RelationshipRepository;
   data: RelationshipData;
   reload: () => void;
+  addRelative?: boolean;
+  clearAddRelative?: () => void;
 }) {
   const [editor, setEditor] = useState<'new' | Connection>();
+  useEffect(() => {
+    if (addRelative && canEdit) {
+      setEditor('new');
+      clearAddRelative?.();
+    }
+  }, [addRelative, canEdit, clearAddRelative]);
   const [remove, setRemove] = useState<Connection>();
   const [pathOpen, setPathOpen] = useState(false);
   const [destination, setDestination] = useState<string>();

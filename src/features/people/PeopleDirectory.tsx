@@ -12,6 +12,7 @@ import { TextField } from '@/components/TextField';
 import { Type } from '@/components/Type';
 import { Choices } from '@/features/people/Choices';
 import { livingOptions } from '@/features/people/personForm';
+import { ConnectedTree } from '@/features/tree/ConnectedTree';
 import { usePeopleQuery } from '@/features/people/usePeople';
 import type { PeopleRepository } from '@/services/peopleRepository';
 
@@ -34,9 +35,13 @@ export function PeopleDirectory({
 }) {
   const [tree, setTree] = useState(initialTree);
   const trees = usePeopleQuery(repository.trees);
+  const [section, setSection] = useState<'tree' | 'directory'>('tree');
   const read = useCallback(
-    () => repository.directory(tree),
-    [repository, tree],
+    async () =>
+      section === 'directory'
+        ? repository.directory(tree)
+        : { ...(await repository.access(tree)), people: [] },
+    [repository, section, tree],
   );
   const result = usePeopleQuery(read);
   const [search, setSearch] = useState('');
@@ -88,66 +93,85 @@ export function PeopleDirectory({
           label="Add Person"
         />
       )}
-      <Card>
-        <TextField
-          label="Search people"
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Name, birth name, or alternative name"
+      <Choices
+        label="Family tree workspace"
+        value={section}
+        onChange={setSection}
+        choices={[
+          { value: 'tree', label: 'Interactive tree' },
+          { value: 'directory', label: 'People directory' },
+        ]}
+      />
+      {section === 'tree' ? (
+        <ConnectedTree
+          key={tree}
+          treeId={tree}
+          canEdit={result.data?.canEdit ?? false}
         />
-        <Choices
-          label="Record status"
-          choices={recordOptions}
-          value={record}
-          onChange={setRecord}
-        />
-        <Choices
-          label="Living status"
-          choices={livingFilter}
-          value={status}
-          onChange={setStatus}
-        />
-      </Card>
-      {result.error ? (
-        <ErrorState message={result.error} onRetry={result.reload} />
-      ) : !people ? (
-        <LoadingState label="Loading family members…" />
-      ) : people.length ? (
-        <Card>
-          {people.map((person) => (
-            <View key={person.id} style={{ gap: 3 }}>
-              <ActionLink
-                href={{
-                  pathname: '/family-tree/[personId]',
-                  params: { personId: person.id },
-                }}
-                label={person.display_name}
-                variant="quiet"
-                icon="person"
-              />
-              <Type variant="detail" tone="muted">
-                {
-                  livingOptions.find(
-                    (option) => option.value === person.living_status,
-                  )?.label
-                }{' '}
-                · {verificationOptionsLabel(person.verification_status)}
-              </Type>
-            </View>
-          ))}
-        </Card>
       ) : (
-        <Card>
-          <State
-            kind="empty"
-            title="No matching people"
-            message={
-              record === 'active' && !term && status === 'all'
-                ? 'Active profiles will appear here. You can also check Drafts or Archived.'
-                : 'Try a different name or change the filters.'
-            }
-          />
-        </Card>
+        <>
+          <Card>
+            <TextField
+              label="Search people"
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Name, birth name, or alternative name"
+            />
+            <Choices
+              label="Record status"
+              choices={recordOptions}
+              value={record}
+              onChange={setRecord}
+            />
+            <Choices
+              label="Living status"
+              choices={livingFilter}
+              value={status}
+              onChange={setStatus}
+            />
+          </Card>
+          {result.error ? (
+            <ErrorState message={result.error} onRetry={result.reload} />
+          ) : !people ? (
+            <LoadingState label="Loading family members…" />
+          ) : people.length ? (
+            <Card>
+              {people.map((person) => (
+                <View key={person.id} style={{ gap: 3 }}>
+                  <ActionLink
+                    href={{
+                      pathname: '/family-tree/[personId]',
+                      params: { personId: person.id },
+                    }}
+                    label={person.display_name}
+                    variant="quiet"
+                    icon="person"
+                  />
+                  <Type variant="detail" tone="muted">
+                    {
+                      livingOptions.find(
+                        (option) => option.value === person.living_status,
+                      )?.label
+                    }{' '}
+                    · {verificationOptionsLabel(person.verification_status)}
+                  </Type>
+                </View>
+              ))}
+            </Card>
+          ) : (
+            <Card>
+              <State
+                kind="empty"
+                title="No matching people"
+                message={
+                  record === 'active' && !term && status === 'all'
+                    ? 'Active profiles will appear here. You can also check Drafts or Archived.'
+                    : 'Try a different name or change the filters.'
+                }
+              />
+            </Card>
+          )}
+        </>
       )}
     </Screen>
   );
