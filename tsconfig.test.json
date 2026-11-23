@@ -11,6 +11,7 @@
   "include": [
     "src/lib/env.test.ts",
     "src/constants/palette.test.ts",
-    "src/features/family/familySummary.test.ts"
+    "src/features/family/familySummary.test.ts",
+    "src/lib/chunkedStorage.test.ts"
   ]
 }

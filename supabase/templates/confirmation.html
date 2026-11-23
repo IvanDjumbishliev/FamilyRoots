@@ -1,0 +1,10 @@
+<h2>Verify your FamilyRoots AI email</h2>
+<p>Your confirmation code is <strong>{{ .Token }}</strong>.</p>
+<p>
+  {{ if eq .RedirectTo "familyroots://verify-email" }}<a
+    href="familyroots://verify-email"
+    >Open FamilyRoots AI</a
+  >{{ else }}<a href="{{ .RedirectTo }}">Open FamilyRoots AI</a>{{ end }} and
+  enter the code with your email address.
+</p>
+<p>If you did not request this, you can ignore this email.</p>

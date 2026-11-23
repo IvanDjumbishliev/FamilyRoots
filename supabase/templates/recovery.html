@@ -1,0 +1,10 @@
+<h2>Reset your FamilyRoots AI password</h2>
+<p>Your recovery code is <strong>{{ .Token }}</strong>.</p>
+<p>
+  {{ if eq .RedirectTo "familyroots://reset-password" }}<a
+    href="familyroots://reset-password"
+    >Open FamilyRoots AI</a
+  >{{ else }}<a href="{{ .RedirectTo }}">Open FamilyRoots AI</a>{{ end }} and
+  enter the code with your email address to choose a new password.
+</p>
+<p>If you did not request this, you can ignore this email.</p>

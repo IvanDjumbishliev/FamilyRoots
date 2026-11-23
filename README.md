@@ -25,7 +25,7 @@ The iOS Simulator requires macOS. If the installed Expo Go version does not supp
 
 ## Environment
 
-The demo workspace runs without Supabase. To enable the connected workspace in Settings, copy `.env.example` to `.env.local`:
+The demo workspace runs without Supabase. To enable authentication and the connected workspace, copy `.env.example` to `.env.local`:
 
 - Windows PowerShell — `Copy-Item .env.example .env.local`
 - macOS and Linux — `cp .env.example .env.local`
@@ -84,7 +84,7 @@ npx supabase@3.2.0 start
 npx supabase@3.2.0 test db --local
 ```
 
-On a fresh start, the CLI applies `supabase/migrations/` and loads `supabase/seed.sql`. The seed contains fictional records and passwordless fixture identities used by the database tests. For interactive sign-in, create and confirm a development user in local Studio under **Authentication → Users**, then use that user's email and password in **Settings → Account settings**. Choose a password for that local development user. To grant the account access to a seeded tree, use the local SQL editor as an administrator to insert a `tree_memberships` row with the seeded tree ID, the new user's ID, and role `viewer` or `editor`. The account can also create its own tree from Settings.
+On a fresh start, the CLI applies `supabase/migrations/` and loads `supabase/seed.sql`. The seed contains fictional records and passwordless fixture identities used by the database tests. For interactive development, register from the app and use the verification email in local Mailpit. Alternatively, provision a confirmed test user in local Studio under **Authentication → Users**. To grant the account access to a seeded tree, use the local SQL editor as an administrator to insert a `tree_memberships` row with the seeded tree ID, the new user's ID, and role `viewer` or `editor`. The account can also create its own tree from Settings.
 
 Use `npx supabase@3.2.0 status` to find the local API URL and publishable key, and copy only those two values into `.env.local`. When testing from a mobile emulator or device, use the address through which that device can reach your development machine. For example, Android Studio's emulator uses `10.0.2.2` to reach the host loopback address. Use your project's HTTPS URL for hosted environments.
 
@@ -96,7 +96,7 @@ npx supabase@3.2.0 link --project-ref <your-project-reference>
 npx supabase@3.2.0 db push
 ```
 
-In the hosted project's **Connect** dialog, copy the project URL and publishable key into the app environment. Provision and confirm an account in **Authentication → Users** to test sign-in. The hosted migration deployment excludes the local seed by default. Keep database passwords and secret or service-role keys out of client environment variables and app bundles.
+In the hosted project's **Connect** dialog, copy the project URL and publishable key into the app environment. Configure Auth email delivery and redirects before testing registration or recovery. The hosted migration deployment excludes the local seed by default. Keep database passwords and secret or service-role keys out of client environment variables and app bundles.
 
 **Settings → Account settings** lists the signed-in account's authorized trees, creates owned trees, and displays their people. Owners and editors can add a person. The existing dashboard and feature flows continue to use the separate session-based demo workspace.
 
@@ -121,3 +121,22 @@ npx supabase@3.2.0 gen types typescript --local --schema public > src/types/data
 npx prettier --write src/types/database.ts
 npm run typecheck
 ```
+
+## Authentication and onboarding
+
+With both public Supabase variables set, the app requires a session for its main routes. New accounts confirm their email, then save a display name and create their first tree. Setup progress is derived from the saved profile and tree membership and survives a reload. An existing member only needs to fill in a missing display name. The onboarding database function serializes retries and creates at most one initial tree per account through this flow.
+
+Open **Settings → Edit user profile** to change your display name or preferred language, or to log out. The language preference is saved with your account. The current interface is in English. The dashboard links to the connected tree and labels the separate demo data. With both environment variables blank, only the demo workspace is available.
+
+### Local email testing
+
+Start Supabase with Mailpit enabled. If the stack was already running when you changed the Auth configuration or templates, run `npx supabase@3.2.0 stop` and start it again. The normal stop preserves local data. Apply pending migrations with `npx supabase@3.2.0 migration up --local`, then run `npm run web` and open the app at `http://localhost:8081`. Supabase status shows the local Mailpit URL. Open the signup or recovery email there, follow its app link, then enter the address and six-digit code from the message. A native development build registers the `familyroots` scheme. Use a development build for native email links.
+
+### Hosted Auth setup
+
+1. Apply the database migrations. In the Supabase Dashboard, enable email and password signup and require email confirmation. Set the minimum password length to 12, choose six-digit email codes, and set an appropriate code lifetime and request rate limits. The local configuration uses a 10-minute lifetime and a 30-second email request interval.
+2. Configure your SMTP provider for signup and recovery email. Add the sender credentials to Supabase Auth. Keep the app environment limited to the Supabase URL and publishable key.
+3. Set the Auth **Site URL** to your HTTPS web origin. Add the exact callback URLs for that origin, ending in `/verify-email` and `/reset-password`, plus `familyroots://verify-email` and `familyroots://reset-password` for native builds. Serve both web paths through the Expo Router export.
+4. Copy [the confirmation template](supabase/templates/confirmation.html) into **Confirm sign up** and [the recovery template](supabase/templates/recovery.html) into **Reset password**. The messages keep credentials out of the deep link and provide the one-time code separately. Links and code verification work from another device that has the app or web origin available.
+
+The mobile client stores its persistent session in Expo SecureStore and clears the legacy unencrypted session cache. The web client persists the Supabase session in origin-scoped browser storage. Serve production web over HTTPS. Password recovery uses a temporary isolated session and requires a separate login afterward. The app throttles repeated submissions and uses generic responses to code requests. Configure provider-side Auth rate limits to enforce abuse controls independently of the client.

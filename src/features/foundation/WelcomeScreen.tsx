@@ -5,6 +5,7 @@ import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { State } from '@/components/State';
 import { Type } from '@/components/Type';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { summarizeFamily } from '@/features/family/familySummary';
 import { PersonList } from '@/features/family/PersonList';
 import { useFamily } from '@/features/family/useFamily';
@@ -16,6 +17,7 @@ export function WelcomeScreen() {
   const { theme } = useTheme();
   const { desktop } = useLayout();
   const { snapshot } = useFamily();
+  const { account } = useAuth();
   const { memberCount, generationCount, recentPeople, timeline, activity } =
     summarizeFamily(snapshot);
 
@@ -44,7 +46,7 @@ export function WelcomeScreen() {
               lineHeight: desktop ? 54 : 40,
             }}
           >
-            Welcome, {snapshot.profileName}
+            Welcome, {account?.profile.display_name || snapshot.profileName}
           </Type>
           <Type style={{ color: '#E0EAE3' }}>
             {memberCount
@@ -58,6 +60,25 @@ export function WelcomeScreen() {
           </View>
         )}
       </View>
+
+      {account?.treeId && (
+        <>
+          <Card>
+            <Type variant="heading" accessibilityRole="header">
+              Connected family tree
+            </Type>
+            {account.treeName && <Type>{account.treeName}</Type>}
+            <ActionLink
+              href="/settings"
+              label="View connected family trees"
+              variant="secondary"
+            />
+          </Card>
+          <Type variant="heading" accessibilityRole="header">
+            Demo workspace
+          </Type>
+        </>
+      )}
 
       {memberCount === 0 && (
         <Card>

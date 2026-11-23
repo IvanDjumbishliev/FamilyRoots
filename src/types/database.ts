@@ -423,6 +423,7 @@ export type Database = {
           created_at: string;
           display_name: string;
           id: string;
+          preferred_language: string;
           updated_at: string;
         };
         ComputedFields: never;
@@ -430,12 +431,14 @@ export type Database = {
           created_at?: string;
           display_name?: string;
           id: string;
+          preferred_language?: string;
           updated_at?: string;
         };
         Update: {
           created_at?: string;
           display_name?: string;
           id?: string;
+          preferred_language?: string;
           updated_at?: string;
         };
         Relationships: [];
@@ -635,7 +638,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      complete_family_onboarding: {
+        Args: { p_display_name: string; p_tree_name: string };
+        Returns: string;
+      };
     };
     Enums: {
       date_precision: 'unknown' | 'year' | 'month' | 'day';
