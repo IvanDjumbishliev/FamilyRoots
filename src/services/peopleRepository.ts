@@ -32,6 +32,7 @@ export function createPeopleRepository(client: BackendClient, userId: string) {
     if (result.error) throw result.error;
     return {
       canEdit: result.data.role !== 'viewer',
+      role: result.data.role,
       name: result.data.family_trees?.name ?? 'Family tree',
     };
   }

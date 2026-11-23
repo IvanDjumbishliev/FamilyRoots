@@ -103,6 +103,13 @@ export function PeopleDirectory({
         label="Family history timeline"
         variant="secondary"
       />
+      {result.data?.canEdit && (
+        <ActionLink
+          href={{ pathname: '/family-tree/gedcom', params: { treeId: tree } }}
+          label="GEDCOM import and export"
+          variant="secondary"
+        />
+      )}
       <Choices
         label="Family tree workspace"
         value={section}

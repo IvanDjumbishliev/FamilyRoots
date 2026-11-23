@@ -1269,7 +1269,20 @@ export type Database = {
         Args: { p_display_name: string; p_tree_name: string };
         Returns: string;
       };
+      export_gedcom: {
+        Args: { p_exclude_living: boolean; p_tree: string };
+        Returns: Json;
+      };
       get_tree_collaboration: { Args: { p_tree: string }; Returns: Json };
+      import_gedcom: {
+        Args: {
+          p_choices: Json;
+          p_data: Json;
+          p_request?: string;
+          p_tree: string;
+        };
+        Returns: Json;
+      };
       inspect_tree_review: { Args: { p_id: string }; Returns: Json };
       list_my_tree_invitations: {
         Args: Record<PropertyKey, never>;

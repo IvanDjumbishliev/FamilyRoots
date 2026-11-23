@@ -1,0 +1,38 @@
+0 HEAD
+1 SOUR FIXTURE
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Ana /Pérez/
+1 BIRT
+2 DATE ABT 1890
+2 PLAC Cádiz
+1 DEAT Y
+1 NOTE @N1@
+1 SOUR @S1@
+2 PAGE Page 12
+0 @I2@ INDI
+1 NAME Rosa /Pérez/
+1 BIRT
+2 DATE 10 MAR 1921
+1 DEAT Y
+1 FAMC @F1@
+2 PEDI ADOPTED
+1 RESI
+2 DATE AUG 1950
+2 PLAC Marseille
+2 SOUR @S1@
+3 PAGE Page 23
+1 OBJE @M1@
+0 @F1@ FAM
+1 WIFE @I1@
+1 CHIL @I2@
+0 @N1@ NOTE Transcribed from a fictional register.
+1 CONT Names are illustrative.
+0 @S1@ SOUR
+1 TITL Fictional family register
+0 @M1@ OBJE
+1 FILE fictional-photo.jpg
+0 TRLR
