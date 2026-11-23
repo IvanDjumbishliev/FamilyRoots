@@ -8,6 +8,7 @@ export type MemoryFile = {
 export type MemoryFileFieldProps = {
   file?: MemoryFile;
   imagesOnly?: boolean;
+  allowedMimeTypes?: readonly string[];
   onFile: (file: MemoryFile) => void;
   onError: (error: string) => void;
 };

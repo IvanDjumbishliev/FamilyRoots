@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 
 import { Card } from '@/components/Card';
@@ -11,7 +11,22 @@ import type { MemoryFile } from '@/features/family/memoryFile';
 import { useFamily } from '@/features/family/useFamily';
 import { useSave } from '@/features/family/useSave';
 
+import { ArchiveUpload } from '@/features/archive/ArchiveUpload';
+import { useArchive } from '@/features/archive/useArchive';
+import { isRecordId } from '@/services/peopleRepository';
+
 export default function UploadMemoryScreen() {
+  const { repository, treeId: firstTree } = useArchive();
+  const { treeId } = useLocalSearchParams<{ treeId?: string }>();
+  const tree = isRecordId(treeId) ? treeId : firstTree;
+  return repository && tree ? (
+    <ArchiveUpload repository={repository} treeId={tree} />
+  ) : (
+    <DemoUpload />
+  );
+}
+
+function DemoUpload() {
   const { repository, workspace } = useFamily();
   const router = useRouter();
   const { save, saving, error } = useSave();

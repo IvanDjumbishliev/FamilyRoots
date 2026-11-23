@@ -13,13 +13,18 @@ import {
 export function MemoryFileField({
   file,
   imagesOnly = false,
+  allowedMimeTypes,
   onFile,
   onError,
 }: MemoryFileFieldProps) {
   async function pick() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: imagesOnly ? imageMimeTypes : memoryMimeTypes,
+        type: allowedMimeTypes
+          ? [...allowedMimeTypes]
+          : imagesOnly
+            ? imageMimeTypes
+            : memoryMimeTypes,
         copyToCacheDirectory: true,
       });
       if (result.canceled) return;
@@ -31,6 +36,8 @@ export function MemoryFileField({
       );
       if (imagesOnly && !mimeType.startsWith('image/'))
         throw new Error('Choose a supported photograph.');
+      if (allowedMimeTypes && !allowedMimeTypes.includes(mimeType))
+        throw new Error('Choose a file supported by this archive.');
       onFile({
         name: asset.name,
         mimeType,

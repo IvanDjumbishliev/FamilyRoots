@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.test.json",
+  "compilerOptions": {
+    "rootDir": "supabase/functions/archive",
+    "outDir": ".test-build/edge-archive"
+  },
+  "include": ["supabase/functions/archive/fileValidation.test.ts"]
+}

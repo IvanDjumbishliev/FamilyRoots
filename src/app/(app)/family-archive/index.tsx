@@ -1,3 +1,4 @@
+import { useLocalSearchParams } from 'expo-router';
 import { Image } from 'react-native';
 
 import { ActionLink } from '@/components/ActionLink';
@@ -8,7 +9,22 @@ import { State } from '@/components/State';
 import { Type } from '@/components/Type';
 import { useFamily } from '@/features/family/useFamily';
 
+import { ArchiveDirectory } from '@/features/archive/ArchiveDirectory';
+import { useArchive } from '@/features/archive/useArchive';
+import { isRecordId } from '@/services/peopleRepository';
+
 export default function ArchiveScreen() {
+  const { repository, treeId: firstTree } = useArchive();
+  const { treeId } = useLocalSearchParams<{ treeId?: string }>();
+  const tree = isRecordId(treeId) ? treeId : firstTree;
+  return repository && tree ? (
+    <ArchiveDirectory key={tree} repository={repository} initialTree={tree} />
+  ) : (
+    <DemoArchive />
+  );
+}
+
+function DemoArchive() {
   const { snapshot } = useFamily();
 
   return (

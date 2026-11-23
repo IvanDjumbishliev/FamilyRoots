@@ -112,7 +112,7 @@ Each profile is readable and editable by its account holder. Memberships are vis
 
 Record unknown dates as `NULL` with precision `unknown`. Use the first day of the year or month to store partial dates and set the matching precision. Approximation is recorded separately. Relationship provenance and verification are separate fields. The database rejects verified relationships whose provenance is still `ai_suggested`.
 
-The private `family-media` bucket accepts paths of the form `<tree UUID>/<unique-file-name>`, with a 10 MB per-file limit. Storage authorization checks the tree membership on each request. The connected person profile supports photograph uploads. Relationship editing and ownership transfer are separate workflows.
+The private `family-media` bucket accepts paths of the form `<tree UUID>/<unique-file-name>`, with a 10 MB per-file limit. Storage authorization checks the tree membership on each request. The connected person profile uses this bucket for profile photos. The Family Archive uses its own private bucket and upload validation function.
 
 After schema changes, regenerate the database types against the migrated local stack:
 
@@ -164,3 +164,24 @@ Open **Family Tree** to explore the diagram. Selecting a card opens its profile.
 Drag to pan and pinch or scroll to zoom. On the web, tab to the diagram and use the arrow keys and + or −. **Fit tree** shows the full current view, and **Center focused person** returns to the selection. Choose **Accessible list** for profiles and relationship descriptions grouped by generation. **People directory** still provides connected draft, archive, and living-status filters.
 
 Owners and editors can choose **Add relative** to open relationship editing for the focused person. Returning to the tree reloads connections. Viewers can explore authorized trees. With Supabase unset, the sample workspace shows more than 100 fictional people across several generations. The empty demo and any demo edits stay local to the app session. No migration or new environment variables are required for this phase.
+
+## Family Archive
+
+Open **Family Archive → Upload Memory** in a connected tree. The archive accepts JPEG, PNG, PDF, and UTF-8 text. Keep originals up to 10 MB. Images also get a compressed preview with a maximum side of 2,000 pixels and a thumbnail with a maximum side of 320 pixels. The archive preserves the original bytes for download. PDFs open in the device or browser viewer, and plain text previews open in the app.
+
+Owners and editors can upload files, edit descriptions and other details, link up to 50 people, and select an existing tree event or create one from the archive form. Use a consistent collection name to group related files. The directory can search across titles, filenames, descriptions, locations, source notes, and linked names, then filter by file type, person, event, or collection. Viewers can read and download authorized files. Owners can remove any file in their tree, and editors can remove their own uploads.
+
+The private `family-archive` bucket enforces tree access for each new download or signed URL. URLs expire after 60 seconds. The server validates file structure and ignores path components in filenames. It hashes the original bytes with SHA-256. An identical upload in the same tree returns the existing record without changing its metadata. A retry after a failed upload can reuse the same file and details. Interrupted reservations expire after 10 minutes. Ready and pending file bytes, including derivatives, count toward a 500 MiB limit per tree.
+
+Removal first hides the item and denies new downloads, then removes the original and derivatives from Storage. The database retains a private tombstone and audit history with uploader and editor IDs. If a Storage outage prevents cleanup, an operator can retry removing the paths for the affected failed or removed rows through the Storage API. A URL already issued can work until expiration if the object could not be deleted immediately.
+
+### Deploy the archive backend
+
+Apply the latest migrations, then deploy the Edge Function to the same linked Supabase project:
+
+```sh
+npx supabase@3.2.0 db push
+npx supabase@3.2.0 functions deploy archive
+```
+
+For local development, start the Supabase stack and, if the function runtime is not running, run `npx supabase@3.2.0 functions serve archive` from the repository root. Run `npx supabase@3.2.0 test db --local` for the archive and authorization suites. Supabase provides the function's server-only environment. The app still uses only the project URL and publishable key. The function verifies the caller's user JWT through Supabase Auth and checks the tree role before using the server-only Storage capability.

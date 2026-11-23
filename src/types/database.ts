@@ -61,6 +61,151 @@ export type Database = {
           },
         ];
       };
+      archive_item_people: {
+        Row: {
+          item_id: string;
+          person_id: string;
+          tree_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          item_id: string;
+          person_id: string;
+          tree_id: string;
+        };
+        Update: {
+          item_id?: string;
+          person_id?: string;
+          tree_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'archive_item_people_tree_id_item_id_fkey';
+            columns: ['tree_id', 'item_id'];
+            isOneToOne: false;
+            referencedRelation: 'archive_items';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'archive_item_people_tree_id_person_id_fkey';
+            columns: ['tree_id', 'person_id'];
+            isOneToOne: false;
+            referencedRelation: 'people';
+            referencedColumns: ['tree_id', 'id'];
+          },
+        ];
+      };
+      archive_items: {
+        Row: {
+          collection: string | null;
+          created_at: string;
+          date_approximate: boolean;
+          date_precision: Database['public']['Enums']['date_precision'];
+          description: string | null;
+          event_id: string | null;
+          file_name: string;
+          id: string;
+          location: string | null;
+          mime_type: string;
+          object_path: string;
+          preview_path: string | null;
+          recorded_on: string | null;
+          sha256: string;
+          size_bytes: number;
+          source_note: string | null;
+          state: string;
+          stored_bytes: number;
+          thumbnail_path: string | null;
+          title: string;
+          tree_id: string;
+          updated_at: string;
+          updated_by: string | null;
+          uploaded_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          collection?: string | null;
+          created_at?: string;
+          date_approximate?: boolean;
+          date_precision?: Database['public']['Enums']['date_precision'];
+          description?: string | null;
+          event_id?: string | null;
+          file_name: string;
+          id?: string;
+          location?: string | null;
+          mime_type: string;
+          object_path: string;
+          preview_path?: string | null;
+          recorded_on?: string | null;
+          sha256: string;
+          size_bytes: number;
+          source_note?: string | null;
+          state?: string;
+          stored_bytes: number;
+          thumbnail_path?: string | null;
+          title: string;
+          tree_id: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          uploaded_by?: string | null;
+        };
+        Update: {
+          collection?: string | null;
+          created_at?: string;
+          date_approximate?: boolean;
+          date_precision?: Database['public']['Enums']['date_precision'];
+          description?: string | null;
+          event_id?: string | null;
+          file_name?: string;
+          id?: string;
+          location?: string | null;
+          mime_type?: string;
+          object_path?: string;
+          preview_path?: string | null;
+          recorded_on?: string | null;
+          sha256?: string;
+          size_bytes?: number;
+          source_note?: string | null;
+          state?: string;
+          stored_bytes?: number;
+          thumbnail_path?: string | null;
+          title?: string;
+          tree_id?: string;
+          updated_at?: string;
+          updated_by?: string | null;
+          uploaded_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'archive_items_tree_id_event_id_fkey';
+            columns: ['tree_id', 'event_id'];
+            isOneToOne: false;
+            referencedRelation: 'life_events';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'archive_items_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'archive_items_updated_by_fkey';
+            columns: ['updated_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'archive_items_uploaded_by_fkey';
+            columns: ['uploaded_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       family_trees: {
         Row: {
           created_at: string;
@@ -776,13 +921,36 @@ export type Database = {
         };
         Returns: string;
       };
+      claim_archive_upload: {
+        Args: {
+          p_actor: string;
+          p_derivatives: boolean;
+          p_file_name: string;
+          p_hash: string;
+          p_meta: Json;
+          p_mime: string;
+          p_people: string[];
+          p_size: number;
+          p_stored_bytes: number;
+          p_tree: string;
+        };
+        Returns: Json;
+      };
       complete_family_onboarding: {
         Args: { p_display_name: string; p_tree_name: string };
         Returns: string;
       };
+      remove_archive_item: {
+        Args: { p_actor: string; p_id: string };
+        Returns: string[];
+      };
       save_family_connection: {
         Args: { p_connection: Json; p_person_id: string; p_tree_id: string };
         Returns: string;
+      };
+      update_archive_item: {
+        Args: { p_id: string; p_meta: Json; p_people: string[] };
+        Returns: undefined;
       };
     };
     Enums: {

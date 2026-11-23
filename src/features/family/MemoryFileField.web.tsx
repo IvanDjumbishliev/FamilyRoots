@@ -12,6 +12,7 @@ import {
 export function MemoryFileField({
   file,
   imagesOnly = false,
+  allowedMimeTypes,
   onFile,
   onError,
 }: MemoryFileFieldProps) {
@@ -24,7 +25,11 @@ export function MemoryFileField({
         hidden
         type="file"
         accept={
-          imagesOnly ? imageMimeTypes.join(',') : acceptedMemoryExtensions
+          allowedMimeTypes
+            ? allowedMimeTypes.join(',')
+            : imagesOnly
+              ? imageMimeTypes.join(',')
+              : acceptedMemoryExtensions
         }
         aria-labelledby={label}
         onChange={(event) => {
@@ -39,6 +44,8 @@ export function MemoryFileField({
             );
             if (imagesOnly && !mimeType.startsWith('image/'))
               throw new Error('Choose a supported photograph.');
+            if (allowedMimeTypes && !allowedMimeTypes.includes(mimeType))
+              throw new Error('Choose a file supported by this archive.');
             onFile({
               name: selected.name,
               mimeType,
