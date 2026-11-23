@@ -148,3 +148,11 @@ Sign in and open **Family Tree**. Select a tree if your account belongs to more 
 A person can be saved as a draft before a name is known. For dates, enter a year, year and month, or full date and mark it approximate when needed. Leave the date blank if unknown. A person's photo and citations can be attached after saving their profile. Photos are uploaded to the private `family-media` bucket and displayed through short-lived URLs. No additional credentials or environment variables are required.
 
 Archiving keeps the person, relationships, media, and sources. Find the person in **Archived** to restore them. Profile history shows which fields changed and when. Supabase records the actor alongside those changes. Deploy the latest migrations using the Supabase setup above before using connected person management.
+
+## Managing family relationships
+
+Sign in, open **Family Tree**, and choose a person. Use **Relationships → Add relationship** to connect an existing person or create and link a new person in the same operation. The editor warns when the entered name matches an existing name or alias. It never links people based on name or gender. Editors and owners can change a parent-child type or direction, update a partnership's type, status, and dates, or change the label for another documented connection. To change a connection to a different category, remove it with confirmation and add the appropriate connection. Removing a connection keeps both people and removes citations attached to that connection.
+
+A person can have multiple partnerships. Leave unknown parents unlinked and unknown dates blank. Partnership dates accept year, month, or day precision and an independent approximate marker. FamilyRoots AI derives shared-parent siblings, grandparents, grandchildren, ancestry, and generation levels from biological and adoptive links. Step, foster, guardian, partner, and other recorded links can contribute to **Find relationship path** without implying ancestry. Disputed and AI-suggested links are visible as recorded evidence and excluded from derived results.
+
+Apply the latest Supabase migration for the connected feature. Viewer access remains read-only. PostgreSQL checks parent-child changes for cycles and serializes concurrent ancestry changes in the same tree. No new environment variables or credentials are required.

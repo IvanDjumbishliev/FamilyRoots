@@ -222,6 +222,68 @@ export type Database = {
           },
         ];
       };
+      other_family_relationships: {
+        Row: {
+          created_at: string;
+          id: string;
+          label: string;
+          notes: string | null;
+          person_a_id: string;
+          person_b_id: string;
+          provenance: Database['public']['Enums']['relationship_provenance'];
+          tree_id: string;
+          updated_at: string;
+          verification_status: Database['public']['Enums']['verification_status'];
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          label: string;
+          notes?: string | null;
+          person_a_id: string;
+          person_b_id: string;
+          provenance?: Database['public']['Enums']['relationship_provenance'];
+          tree_id: string;
+          updated_at?: string;
+          verification_status?: Database['public']['Enums']['verification_status'];
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          label?: string;
+          notes?: string | null;
+          person_a_id?: string;
+          person_b_id?: string;
+          provenance?: Database['public']['Enums']['relationship_provenance'];
+          tree_id?: string;
+          updated_at?: string;
+          verification_status?: Database['public']['Enums']['verification_status'];
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'other_family_relationships_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'other_family_relationships_tree_id_person_a_id_fkey';
+            columns: ['tree_id', 'person_a_id'];
+            isOneToOne: false;
+            referencedRelation: 'people';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'other_family_relationships_tree_id_person_b_id_fkey';
+            columns: ['tree_id', 'person_b_id'];
+            isOneToOne: false;
+            referencedRelation: 'people';
+            referencedColumns: ['tree_id', 'id'];
+          },
+        ];
+      };
       parent_child_relationships: {
         Row: {
           child_id: string;
@@ -299,6 +361,7 @@ export type Database = {
           start_date_approximate: boolean;
           start_date_precision: Database['public']['Enums']['date_precision'];
           started_on: string | null;
+          status: Database['public']['Enums']['partnership_status'];
           tree_id: string;
           updated_at: string;
           verification_status: Database['public']['Enums']['verification_status'];
@@ -318,6 +381,7 @@ export type Database = {
           start_date_approximate?: boolean;
           start_date_precision?: Database['public']['Enums']['date_precision'];
           started_on?: string | null;
+          status?: Database['public']['Enums']['partnership_status'];
           tree_id: string;
           updated_at?: string;
           verification_status?: Database['public']['Enums']['verification_status'];
@@ -336,6 +400,7 @@ export type Database = {
           start_date_approximate?: boolean;
           start_date_precision?: Database['public']['Enums']['date_precision'];
           started_on?: string | null;
+          status?: Database['public']['Enums']['partnership_status'];
           tree_id?: string;
           updated_at?: string;
           verification_status?: Database['public']['Enums']['verification_status'];
@@ -715,6 +780,10 @@ export type Database = {
         Args: { p_display_name: string; p_tree_name: string };
         Returns: string;
       };
+      save_family_connection: {
+        Args: { p_connection: Json; p_person_id: string; p_tree_id: string };
+        Returns: string;
+      };
     };
     Enums: {
       date_precision: 'unknown' | 'year' | 'month' | 'day';
@@ -731,6 +800,7 @@ export type Database = {
         | 'civil_union'
         | 'domestic_partnership'
         | 'other';
+      partnership_status: 'unknown' | 'current' | 'former';
       relationship_provenance:
         | 'user_reported'
         | 'documented'
@@ -884,6 +954,7 @@ export const Constants = {
         'domestic_partnership',
         'other',
       ],
+      partnership_status: ['unknown', 'current', 'former'],
       relationship_provenance: [
         'user_reported',
         'documented',

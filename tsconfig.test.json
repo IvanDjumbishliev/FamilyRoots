@@ -13,6 +13,7 @@
     "src/constants/palette.test.ts",
     "src/features/family/familySummary.test.ts",
     "src/lib/chunkedStorage.test.ts",
-    "src/features/people/personForm.test.ts"
+    "src/features/people/personForm.test.ts",
+    "src/features/relationships/relationshipGraph.test.ts"
   ]
 }

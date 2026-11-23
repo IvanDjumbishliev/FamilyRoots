@@ -21,6 +21,7 @@ import {
   sourceForm,
   verificationOptions,
 } from '@/features/people/personForm';
+import { PersonRelationships } from '@/features/relationships/PersonRelationships';
 import { usePeopleQuery } from '@/features/people/usePeople';
 import type {
   ConnectedPerson,
@@ -188,6 +189,12 @@ function Profile({
           />
         )}
       </Card>
+
+      <PersonRelationships
+        personId={person.id}
+        treeId={person.tree_id}
+        canEdit={editable}
+      />
 
       {editable && (
         <PhotoForm
