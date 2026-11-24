@@ -258,3 +258,39 @@ For local development, run `npx supabase@3.2.0 functions serve genealogy-assista
 Optional Supabase Edge Function secrets are `OPENAI_API_KEY` and `ASSISTANT_OPENAI_MODEL`. Choose an available Responses API model that supports Structured Outputs. With both secrets set, the provider can reorder approved statements using only numbered items, task categories, and evidence-status labels. The function sends no profile names, dates, notes, source titles, IDs, tree identifiers, or document text to OpenAI. The response uses `store: false`, a 256-token output cap, and an eight-second timeout. The backend permits 20 assistant requests per account per UTC day and 200 live attempts per project per UTC day. Invalid provider replies, provider errors, or exhausted live quota fall back to the grounded response. See the [OpenAI structured output guide](https://developers.openai.com/api/docs/guides/structured-outputs).
 
 Assistant requests and responses are held only for the current view. **Clear assistant session** removes the excerpt, selected profiles, and response, including any response still in flight. The application keeps no conversation history. Quota counters track usage without storing prompts, excerpts, or answers.
+
+## Phase 15 · Family history books
+
+Open **My Books → Create Book** in a connected tree. Choose the whole tree, a verified descendant branch, or the **Fictional sample family** to try the complete workflow. Enter a title, attribution, optional notice and dedication. Choose a theme and English, Spanish, or Bulgarian for headings and generated text. Names, quotations, and contributor text stay in their original language. Review the outline, generate a draft, then edit or regenerate individual sections before selecting **Export PDF**. The contents page, running headers, page numbers, and photo captions are laid out on the server.
+
+The default **Deceased people only** edition omits living and unknown-status profiles, places, biographies written by contributors, archive media, and source titles. It keeps references to the tree’s records without exposing those titles. A full edition requires permission to include private information and reproduce any selected media. Review manually entered titles, attributions, dedications, and edits before export. The worker does not automatically redact content typed by the contributor. It embeds available JPEG/PNG thumbnails and includes selected documents as archive references. Captions remain if an image is unavailable. The draft uses a snapshot of the evidence captured at generation. Create a fresh draft when privacy or source records change.
+
+The worker assembles text from verified records and separates contributor text and media credits from automated material. This phase uses no generative AI. Copyright notices are configurable and the book does not determine ownership, licensing, or registration. PDFs are private to their creator while they retain tree access. Download URLs expire after 60 seconds. The worker supports up to 100 included profiles, 100 selected events, 150 source references, and 10 selected archive files. PDFs are limited to 190 pages and 10 MB. The included DejaVu fonts cover the selected edition languages and common Latin, Greek, and Cyrillic names.
+
+### Deploy and schedule background jobs
+
+Apply the migration and deploy the function with the CLI with Docker running so that the font assets ship with it:
+
+```sh
+npx supabase@3.2.0 db push
+npx supabase@3.2.0 functions deploy family-book-worker
+```
+
+The app wakes the worker when the creator opens a queued draft. To continue processing after the app closes, set a high-entropy **BOOK_WORKER_SECRET** as an Edge Function secret and save the same value in Supabase Vault as `family_book_worker_secret`. Save the deployment's HTTPS project URL in Vault as `family_book_project_url`. Enable `pg_cron` and `pg_net` for the project, then schedule the worker once per minute:
+
+```sql
+select cron.schedule('family-book-worker', '* * * * *', $job$
+  select net.http_post(
+    url := (select decrypted_secret from vault.decrypted_secrets
+      where name = 'family_book_project_url') || '/functions/v1/family-book-worker',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'x-book-worker-secret', (select decrypted_secret from vault.decrypted_secrets
+        where name = 'family_book_worker_secret')
+    ),
+    body := '{}'::jsonb
+  );
+$job$);
+```
+
+For local development, start the database and run `npx supabase@3.2.0 functions serve family-book-worker`. The in-app worker wake can be used without a local cron secret. Keep the Edge Function and Vault secrets out of client environment files. The app still uses only the project URL and publishable key.

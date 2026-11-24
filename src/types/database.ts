@@ -279,6 +279,85 @@ export type Database = {
           },
         ];
       };
+      family_books: {
+        Row: {
+          attempts: number;
+          claimed_at: string | null;
+          created_at: string;
+          creator_id: string;
+          error: string | null;
+          id: string;
+          lease: string | null;
+          operation: string;
+          pdf_path: string | null;
+          pdf_revision: number | null;
+          revision: number;
+          section_key: string | null;
+          sections: NonNullable<Json>;
+          settings: NonNullable<Json>;
+          snapshot: Json | null;
+          status: string;
+          tree_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          attempts?: number;
+          claimed_at?: string | null;
+          created_at?: string;
+          creator_id: string;
+          error?: string | null;
+          id?: string;
+          lease?: string | null;
+          operation?: string;
+          pdf_path?: string | null;
+          pdf_revision?: number | null;
+          revision?: number;
+          section_key?: string | null;
+          sections?: NonNullable<Json>;
+          settings: NonNullable<Json>;
+          snapshot?: Json | null;
+          status?: string;
+          tree_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          attempts?: number;
+          claimed_at?: string | null;
+          created_at?: string;
+          creator_id?: string;
+          error?: string | null;
+          id?: string;
+          lease?: string | null;
+          operation?: string;
+          pdf_path?: string | null;
+          pdf_revision?: number | null;
+          revision?: number;
+          section_key?: string | null;
+          sections?: NonNullable<Json>;
+          settings?: NonNullable<Json>;
+          snapshot?: Json | null;
+          status?: string;
+          tree_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'family_books_creator_id_fkey';
+            columns: ['creator_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'family_books_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       family_trees: {
         Row: {
           created_at: string;
@@ -1400,16 +1479,73 @@ export type Database = {
         };
         Returns: Json;
       };
+      claim_family_book: {
+        Args: { p_id?: string };
+        Returns: {
+          attempts: number;
+          claimed_at: string | null;
+          created_at: string;
+          creator_id: string;
+          error: string | null;
+          id: string;
+          lease: string | null;
+          operation: string;
+          pdf_path: string | null;
+          pdf_revision: number | null;
+          revision: number;
+          section_key: string | null;
+          sections: NonNullable<Json>;
+          settings: NonNullable<Json>;
+          snapshot: Json | null;
+          status: string;
+          tree_id: string;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: '*';
+          to: 'family_books';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       complete_family_onboarding: {
         Args: { p_display_name: string; p_tree_name: string };
         Returns: string;
+      };
+      create_family_book: {
+        Args: { p_settings: Json; p_tree: string };
+        Returns: string;
+      };
+      edit_family_book_section: {
+        Args: {
+          p_body: string;
+          p_id: string;
+          p_key: string;
+          p_revision: number;
+        };
+        Returns: undefined;
       };
       export_gedcom: {
         Args: { p_exclude_living: boolean; p_tree: string };
         Returns: Json;
       };
+      finish_family_book: {
+        Args: {
+          p_error?: string;
+          p_id: string;
+          p_lease: string;
+          p_pdf?: string;
+          p_sections?: Json;
+          p_snapshot?: Json;
+        };
+        Returns: boolean;
+      };
       get_assistant_evidence: {
         Args: { p_people: string[]; p_task: string; p_tree: string };
+        Returns: Json;
+      };
+      get_family_book_context: {
+        Args: { p_id: string; p_lease: string };
         Returns: Json;
       };
       get_tree_collaboration: { Args: { p_tree: string }; Returns: Json };
@@ -1455,6 +1591,16 @@ export type Database = {
           p_tree: string;
         };
         Returns: string;
+      };
+      queue_family_book: {
+        Args: {
+          p_action: string;
+          p_id: string;
+          p_reviewed?: boolean;
+          p_revision: number;
+          p_section?: string;
+        };
+        Returns: undefined;
       };
       record_invitation_delivery: {
         Args: { p_attempt: string; p_id: string };

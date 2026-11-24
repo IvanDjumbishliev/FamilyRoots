@@ -47,3 +47,10 @@ verify_jwt = false
 
 [functions.genealogy-assistant]
 verify_jwt = false
+
+[functions.family-book-worker]
+verify_jwt = false
+static_files = ["./functions/family-book-worker/fonts/*.ttf"]
+
+[edge_runtime]
+policy = "per_worker"

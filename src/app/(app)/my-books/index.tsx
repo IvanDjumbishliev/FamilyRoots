@@ -1,3 +1,5 @@
+import { ConnectedBooks } from '@/features/books/ConnectedBooks';
+import { useBooks } from '@/features/books/useBooks';
 import { useState } from 'react';
 
 import { ActionLink } from '@/components/ActionLink';
@@ -12,6 +14,21 @@ import { useFamily } from '@/features/family/useFamily';
 import type { Book } from '@/types/family';
 
 export default function BooksScreen() {
+  const { repository } = useBooks();
+  if (!repository) return <DemoBooks />;
+  return (
+    <Screen>
+      <PageHeading
+        title="My Books"
+        description="Create, edit, and export a family history book."
+      />
+      <ActionLink href="/my-books/create" icon="book" label="Create Book" />
+      <ConnectedBooks repository={repository} />
+    </Screen>
+  );
+}
+
+function DemoBooks() {
   const { snapshot } = useFamily();
   const [preview, setPreview] = useState<Book>();
 
