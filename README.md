@@ -239,3 +239,22 @@ Review the result’s collection, reference, URL, license, and retrieval date. C
 Apply the schema with `npx supabase@3.2.0 db push` on a linked project. No new environment variables or credentials are required. The mock uses the signed-in Supabase session and allows 20 requests per account each minute. Search responses are not cached. Saved findings are private tree records and carry the original provider attribution.
 
 The provider boundary is in `src/features/discovery/historicalSearch.ts`. Each adapter identifies its provider and terms, and the search service validates and deduplicates results while retaining source attribution. A live adapter requires authorized API access and documentation, a server-side authenticated transport, its own rate limit, and a review of the provider’s rules for storing and citing records. Only approved historical facts and locality-level places belong in normalized results. Keep provider credentials, contact information, street addresses, and sensitive living-person details out of the app.
+
+## Phase 14 · AI genealogy assistant
+
+Open **Discover → Open genealogy assistant** in a connected tree. The protected backend defaults to a deterministic grounded preview, so it works without an AI account. Choose a task for a verified summary, biography, profile gaps, document explanation, possible record matches, relationship path, interview questions, or research plan. Paste a document excerpt for text-based analysis. The assistant does not fetch files or browse external records. Possible matches currently come from the Fictional Archive and are labeled as practice examples.
+
+The assistant distinguishes verified tree entries, reported text or links, unknown details, and research suggestions. Available evidence appears beside each statement. Profile-level citations are linked records and may support only part of a profile. Relationship paths are limited to eight steps across up to 600 eligible links and omit disputed and AI-suggested links. A response does not edit a profile or add a relationship. Review the evidence and make any confirmed change through the regular tree editor.
+
+Apply the database migration and deploy the function to your linked Supabase project:
+
+```sh
+npx supabase@3.2.0 db push
+npx supabase@3.2.0 functions deploy genealogy-assistant
+```
+
+For local development, run `npx supabase@3.2.0 functions serve genealogy-assistant` from the repository root. The function checks the signed-in session and tree membership. Keep the app environment limited to the Supabase project URL and publishable key.
+
+Optional Supabase Edge Function secrets are `OPENAI_API_KEY` and `ASSISTANT_OPENAI_MODEL`. Choose an available Responses API model that supports Structured Outputs. With both secrets set, the provider can reorder approved statements using only numbered items, task categories, and evidence-status labels. The function sends no profile names, dates, notes, source titles, IDs, tree identifiers, or document text to OpenAI. The response uses `store: false`, a 256-token output cap, and an eight-second timeout. The backend permits 20 assistant requests per account per UTC day and 200 live attempts per project per UTC day. Invalid provider replies, provider errors, or exhausted live quota fall back to the grounded response. See the [OpenAI structured output guide](https://developers.openai.com/api/docs/guides/structured-outputs).
+
+Assistant requests and responses are held only for the current view. **Clear assistant session** removes the excerpt, selected profiles, and response, including any response still in flight. The application keeps no conversation history. Quota counters track usage without storing prompts, excerpts, or answers.

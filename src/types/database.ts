@@ -1408,6 +1408,10 @@ export type Database = {
         Args: { p_exclude_living: boolean; p_tree: string };
         Returns: Json;
       };
+      get_assistant_evidence: {
+        Args: { p_people: string[]; p_task: string; p_tree: string };
+        Returns: Json;
+      };
       get_tree_collaboration: { Args: { p_tree: string }; Returns: Json };
       import_gedcom: {
         Args: {
@@ -1468,6 +1472,10 @@ export type Database = {
           p_tree: string;
         };
         Returns: Json;
+      };
+      reserve_assistant_request: {
+        Args: { p_actor: string; p_live: boolean };
+        Returns: boolean;
       };
       resolve_tree_review: {
         Args: {

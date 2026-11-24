@@ -31,6 +31,11 @@ export default function DiscoverScreen() {
         title="Discover"
         description="Explore historical records and compare potential matches with your family tree."
       />
+      <ActionLink
+        href="/assistant"
+        label="Open genealogy assistant"
+        variant="secondary"
+      />
       {research && people && firstTree ? (
         <ConnectedResearch
           key={firstTree}

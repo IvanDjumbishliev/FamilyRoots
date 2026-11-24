@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.collaboration]
 verify_jwt = false
+
+[functions.genealogy-assistant]
+verify_jwt = false

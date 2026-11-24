@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.test.json",
+  "compilerOptions": {
+    "rootDir": "supabase/functions/genealogy-assistant",
+    "outDir": ".test-build/edge-assistant"
+  },
+  "include": ["supabase/functions/genealogy-assistant/core.test.ts"]
+}
