@@ -17,6 +17,7 @@
     "src/features/relationships/relationshipGraph.test.ts",
     "src/features/tree/treeLayout.test.ts",
     "src/features/timeline/timelineModel.test.ts",
-    "src/features/gedcom/gedcom.test.ts"
+    "src/features/gedcom/gedcom.test.ts",
+    "src/features/discovery/historicalSearch.test.ts"
   ]
 }

@@ -13,11 +13,13 @@ export function RelativePicker({
   selected,
   onSelect,
   label,
+  optionLabel,
 }: {
   people: readonly Relative[];
   selected?: string;
   onSelect: (id: string) => void;
   label: string;
+  optionLabel?: (person: Relative) => string;
 }) {
   const [query, setQuery] = useState('');
   const current = people.find((person) => person.id === selected);
@@ -41,7 +43,7 @@ export function RelativePicker({
       {matches.slice(0, 8).map((person) => (
         <Button
           key={person.id}
-          label={person.display_name}
+          label={optionLabel?.(person) ?? person.display_name}
           variant="secondary"
           selected={selected === person.id}
           aria-pressed={selected === person.id}

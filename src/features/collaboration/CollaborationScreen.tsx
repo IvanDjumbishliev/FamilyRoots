@@ -37,6 +37,8 @@ const entityNames: Record<string, string> = {
   collaboration_comments: 'Comment',
   tree_reviews: 'Review',
   sources: 'Source',
+  research_findings: 'Research finding',
+  research_matches: 'Research decision',
 };
 type Summary = Awaited<ReturnType<CollaborationRepository['summary']>>;
 

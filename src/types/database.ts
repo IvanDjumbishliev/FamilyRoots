@@ -852,6 +852,141 @@ export type Database = {
         };
         Relationships: [];
       };
+      research_findings: {
+        Row: {
+          created_at: string;
+          id: string;
+          provider: string;
+          record: NonNullable<Json>;
+          record_key: string;
+          saved_by: string | null;
+          tree_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          provider: string;
+          record: NonNullable<Json>;
+          record_key: string;
+          saved_by?: string | null;
+          tree_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          provider?: string;
+          record?: NonNullable<Json>;
+          record_key?: string;
+          saved_by?: string | null;
+          tree_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'research_findings_saved_by_fkey';
+            columns: ['saved_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'research_findings_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      research_matches: {
+        Row: {
+          citation_id: string | null;
+          created_at: string;
+          decided_by: string | null;
+          finding_id: string;
+          hypothesis: string | null;
+          id: string;
+          person_id: string;
+          related_person_id: string | null;
+          status: string;
+          tree_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          citation_id?: string | null;
+          created_at?: string;
+          decided_by?: string | null;
+          finding_id: string;
+          hypothesis?: string | null;
+          id?: string;
+          person_id: string;
+          related_person_id?: string | null;
+          status: string;
+          tree_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          citation_id?: string | null;
+          created_at?: string;
+          decided_by?: string | null;
+          finding_id?: string;
+          hypothesis?: string | null;
+          id?: string;
+          person_id?: string;
+          related_person_id?: string | null;
+          status?: string;
+          tree_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'research_matches_citation_id_fkey';
+            columns: ['citation_id'];
+            isOneToOne: false;
+            referencedRelation: 'source_citations';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'research_matches_decided_by_fkey';
+            columns: ['decided_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'research_matches_tree_id_finding_id_fkey';
+            columns: ['tree_id', 'finding_id'];
+            isOneToOne: false;
+            referencedRelation: 'research_findings';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'research_matches_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'research_matches_tree_id_person_id_fkey';
+            columns: ['tree_id', 'person_id'];
+            isOneToOne: false;
+            referencedRelation: 'people';
+            referencedColumns: ['tree_id', 'id'];
+          },
+          {
+            foreignKeyName: 'research_matches_tree_id_related_person_id_fkey';
+            columns: ['tree_id', 'related_person_id'];
+            isOneToOne: false;
+            referencedRelation: 'people';
+            referencedColumns: ['tree_id', 'id'];
+          },
+        ];
+      };
       source_citations: {
         Row: {
           created_at: string;
@@ -1364,9 +1499,30 @@ export type Database = {
         };
         Returns: string;
       };
+      search_fictional_historical_records: {
+        Args: {
+          p_from: number;
+          p_name: string;
+          p_place: string;
+          p_to: number;
+          p_type: string;
+        };
+        Returns: Json[];
+      };
       update_archive_item: {
         Args: { p_id: string; p_meta: Json; p_people: string[] };
         Returns: undefined;
+      };
+      update_fictional_research: {
+        Args: {
+          p_action: string;
+          p_hypothesis?: string;
+          p_person?: string;
+          p_record: string;
+          p_related?: string;
+          p_tree: string;
+        };
+        Returns: string;
       };
       update_versioned_archive_item: {
         Args: {
