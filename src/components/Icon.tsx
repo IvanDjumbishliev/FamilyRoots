@@ -19,6 +19,7 @@ const paths = {
   close: 'm6 6 12 12M18 6 6 18',
   sun: 'M12 3v2m0 14v2M3 12h2m14 0h2M5.6 5.6 7 7m10 10 1.4 1.4m0-12.8L17 7M7 17l-1.4 1.4M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z',
   person: 'M16 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 20c0-4 3-6 8-6s8 2 8 6',
+  bell: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0',
 } as const;
 
 export type IconName = keyof typeof paths;

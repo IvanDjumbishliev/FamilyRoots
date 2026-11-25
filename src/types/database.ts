@@ -397,6 +397,115 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          body: string;
+          category: string;
+          created_at: string;
+          id: string;
+          link: string | null;
+          metadata: NonNullable<Json>;
+          read: boolean;
+          title: string;
+          tree_id: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          body: string;
+          category: string;
+          created_at?: string;
+          id?: string;
+          link?: string | null;
+          metadata?: NonNullable<Json>;
+          read?: boolean;
+          title: string;
+          tree_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          body?: string;
+          category?: string;
+          created_at?: string;
+          id?: string;
+          link?: string | null;
+          metadata?: NonNullable<Json>;
+          read?: boolean;
+          title?: string;
+          tree_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_tree_id_fkey';
+            columns: ['tree_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_trees';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      user_preferences: {
+        Row: {
+          created_at: string;
+          notify_books: boolean;
+          notify_collaboration: boolean;
+          notify_corrections: boolean;
+          notify_email: boolean;
+          notify_failures: boolean;
+          notify_invitations: boolean;
+          notify_push: boolean;
+          privacy_hide_living: boolean;
+          privacy_profile_visibility: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          notify_books?: boolean;
+          notify_collaboration?: boolean;
+          notify_corrections?: boolean;
+          notify_email?: boolean;
+          notify_failures?: boolean;
+          notify_invitations?: boolean;
+          notify_push?: boolean;
+          privacy_hide_living?: boolean;
+          privacy_profile_visibility?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          notify_books?: boolean;
+          notify_collaboration?: boolean;
+          notify_corrections?: boolean;
+          notify_email?: boolean;
+          notify_failures?: boolean;
+          notify_invitations?: boolean;
+          notify_push?: boolean;
+          privacy_hide_living?: boolean;
+          privacy_profile_visibility?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_preferences_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       family_trees: {
         Row: {
           created_at: string;
@@ -1563,6 +1672,34 @@ export type Database = {
           p_revision: number;
         };
         Returns: undefined;
+      };
+      delete_user_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      export_personal_data: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
+      global_search: {
+        Args: {
+          p_category?: string;
+          p_limit?: number;
+          p_offset?: number;
+          p_query: string;
+          p_tree_id?: string | null;
+        };
+        Returns: {
+          category: string;
+          created_at: string;
+          detail: string | null;
+          id: string;
+          link: string;
+          subtitle: string | null;
+          title: string;
+          tree_id: string;
+          tree_name: string | null;
+        }[];
       };
       save_family_book_draft: {
         Args: {

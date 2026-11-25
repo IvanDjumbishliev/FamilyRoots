@@ -12,7 +12,13 @@ import { useTheme } from '@/hooks/useTheme';
 const destinations = [
   { href: '/', label: 'Home', short: 'Home', icon: 'home' },
   { href: '/family-tree', label: 'Family Tree', short: 'Tree', icon: 'tree' },
-  { href: '/discover', label: 'Discover', short: 'Discover', icon: 'search' },
+  { href: '/search', label: 'Search', short: 'Search', icon: 'search' },
+  {
+    href: '/notifications',
+    label: 'Notifications',
+    short: 'Alerts',
+    icon: 'bell',
+  },
   {
     href: '/family-archive',
     label: 'Family Archive',
