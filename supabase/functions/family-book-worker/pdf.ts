@@ -9,7 +9,8 @@ import {
 import type { BookMedia, BookSettings, Section } from './book.ts';
 
 const paper = { width: 595, height: 842, margin: 56 };
-const colors = {
+
+export const bookColors = {
   forest: {
     accent: rgb(0.09, 0.24, 0.2),
     paper: rgb(0.98, 0.97, 0.94),
@@ -24,6 +25,16 @@ const colors = {
     accent: rgb(0.31, 0.19, 0.12),
     paper: rgb(0.98, 0.95, 0.89),
     soft: rgb(0.68, 0.47, 0.31),
+  },
+  rose: {
+    accent: rgb(0.35, 0.12, 0.18),
+    paper: rgb(0.99, 0.96, 0.96),
+    soft: rgb(0.8, 0.55, 0.6),
+  },
+  slate: {
+    accent: rgb(0.2, 0.22, 0.25),
+    paper: rgb(0.96, 0.96, 0.97),
+    soft: rgb(0.6, 0.65, 0.7),
   },
 };
 const bodyColor = rgb(0.14, 0.18, 0.17);
@@ -66,10 +77,18 @@ export async function renderPdf(
       Deno.readFile(new URL(`./fonts/${font}.ttf`, import.meta.url)),
     ),
   );
-  const body = await pdf.embedFont(sansBytes, { subset: true });
-  const heading = await pdf.embedFont(serifBytes, { subset: true });
+  const sansFont = await pdf.embedFont(sansBytes, { subset: true });
+  const serifFont = await pdf.embedFont(serifBytes, { subset: true });
+
+  const fontTheme = settings.fontTheme ?? 'serif';
+  const body = fontTheme === 'sans' ? sansFont : serifFont;
+  const heading = fontTheme === 'sans' ? sansFont : serifFont;
+
   const supported = new Map(
-    [body, heading].map((font) => [font, new Set(font.getCharacterSet())]),
+    [sansFont, serifFont].map((font) => [
+      font,
+      new Set(font.getCharacterSet()),
+    ]),
   );
   const safe = (text: string, font: PDFFont) =>
     [...text]
@@ -78,16 +97,20 @@ export async function renderPdf(
         char === '\r' ||
         supported.get(font)?.has(char.codePointAt(0)!)
           ? char
-          : '�',
+          : '',
       )
       .join('');
-  const color = colors[settings.theme];
+
+  const template = settings.template ?? 'classic-heritage';
+  const color = bookColors[settings.theme] ?? bookColors.forest;
   const { width, height, margin } = paper;
   const textWidth = width - 2 * margin;
+
   pdf.setTitle(settings.title);
   pdf.setAuthor(settings.author);
   pdf.setLanguage(settings.language);
   pdf.setCreator('FamilyRoots AI');
+
   const table: { title: string; page: number }[] = [];
   let page: PDFPage;
   let y = 0;
@@ -98,46 +121,181 @@ export async function renderPdf(
       throw new Error(
         'The PDF exceeds 190 pages. Shorten edited sections or narrow the selection.',
       );
-    page.drawRectangle({
-      x: 0,
-      y: 0,
-      width,
-      height,
-      color: cover ? color.accent : color.paper,
-    });
-    if (!cover) {
-      const running = textLines(
-        safe(settings.title, body),
-        body,
-        8,
-        textWidth - 32,
-      )[0];
-      page.drawText(running, {
-        x: margin,
-        y: height - 38,
-        size: 8,
-        font: body,
-        color: color.accent,
+
+    // Apply template styling for background
+    if (cover) {
+      if (template === 'modern-minimal') {
+        page.drawRectangle({
+          x: 0,
+          y: 0,
+          width,
+          height,
+          color: color.paper,
+        });
+        // Modern minimal clean bar
+        page.drawRectangle({
+          x: margin,
+          y: height - 120,
+          width: 6,
+          height: 140,
+          color: color.accent,
+        });
+      } else if (template === 'vintage-archive') {
+        page.drawRectangle({
+          x: 0,
+          y: 0,
+          width,
+          height,
+          color: color.paper,
+        });
+        // Vintage double border on cover
+        page.drawRectangle({
+          x: margin - 16,
+          y: margin - 16,
+          width: width - 2 * (margin - 16),
+          height: height - 2 * (margin - 16),
+          borderColor: color.accent,
+          borderWidth: 2,
+        });
+        page.drawRectangle({
+          x: margin - 10,
+          y: margin - 10,
+          width: width - 2 * (margin - 10),
+          height: height - 2 * (margin - 10),
+          borderColor: color.soft,
+          borderWidth: 0.75,
+        });
+      } else {
+        // Classic heritage: rich saturated cover
+        page.drawRectangle({
+          x: 0,
+          y: 0,
+          width,
+          height,
+          color: color.accent,
+        });
+        // Gold / soft accent border
+        page.drawRectangle({
+          x: margin - 12,
+          y: margin - 12,
+          width: width - 2 * (margin - 12),
+          height: height - 2 * (margin - 12),
+          borderColor: color.soft,
+          borderWidth: 1.5,
+        });
+      }
+    } else {
+      page.drawRectangle({
+        x: 0,
+        y: 0,
+        width,
+        height,
+        color: color.paper,
       });
-      page.drawLine({
-        start: { x: margin, y: height - 48 },
-        end: { x: width - margin, y: height - 48 },
-        thickness: 0.6,
-        color: color.soft,
-      });
-      page.drawText(String(pdf.getPageCount()), {
-        x: width - margin - 20,
-        y: 31,
-        size: 9,
-        font: body,
-        color: color.accent,
-      });
+
+      // Template page headers & footers
+      if (template === 'vintage-archive') {
+        // Vintage archive decorative header
+        const running = textLines(
+          safe(settings.title, serifFont),
+          serifFont,
+          9,
+          textWidth - 40,
+        )[0];
+        page.drawText(running, {
+          x: margin,
+          y: height - 38,
+          size: 9,
+          font: serifFont,
+          color: color.accent,
+        });
+        page.drawLine({
+          start: { x: margin, y: height - 44 },
+          end: { x: width - margin, y: height - 44 },
+          thickness: 1.2,
+          color: color.accent,
+        });
+        page.drawLine({
+          start: { x: margin, y: height - 47 },
+          end: { x: width - margin, y: height - 47 },
+          thickness: 0.4,
+          color: color.soft,
+        });
+        page.drawText(`— ${pdf.getPageCount()} —`, {
+          x: width / 2 - 16,
+          y: 28,
+          size: 9,
+          font: serifFont,
+          color: color.accent,
+        });
+      } else if (template === 'modern-minimal') {
+        // Modern minimal header
+        const running = textLines(
+          safe(settings.title.toUpperCase(), sansFont),
+          sansFont,
+          7,
+          textWidth - 40,
+        )[0];
+        page.drawText(running, {
+          x: margin,
+          y: height - 36,
+          size: 7,
+          font: sansFont,
+          color: color.soft,
+        });
+        page.drawText(String(pdf.getPageCount()), {
+          x: width - margin - 20,
+          y: height - 36,
+          size: 8,
+          font: sansFont,
+          color: color.accent,
+        });
+      } else {
+        // Classic heritage header
+        const running = textLines(
+          safe(settings.title, body),
+          body,
+          8,
+          textWidth - 32,
+        )[0];
+        page.drawText(running, {
+          x: margin,
+          y: height - 38,
+          size: 8,
+          font: body,
+          color: color.accent,
+        });
+        page.drawLine({
+          start: { x: margin, y: height - 48 },
+          end: { x: width - margin, y: height - 48 },
+          thickness: 0.6,
+          color: color.soft,
+        });
+        page.drawText(String(pdf.getPageCount()), {
+          x: width - margin - 20,
+          y: 31,
+          size: 9,
+          font: body,
+          color: color.accent,
+        });
+      }
     }
     y = cover ? 567 : height - 91;
     return page;
   }
 
   function draw(text: string, size = 11, font = body, cover = false) {
+    const isCoverLight =
+      cover &&
+      (template === 'modern-minimal' || template === 'vintage-archive');
+    const textColor = cover
+      ? isCoverLight
+        ? color.accent
+        : color.paper
+      : font === heading
+        ? color.accent
+        : bodyColor;
+
     for (const line of textLines(safe(text, font), font, size, textWidth)) {
       if (y < 65 + size) start(cover);
       page.drawText(line, {
@@ -145,28 +303,28 @@ export async function renderPdf(
         y,
         size,
         font,
-        color: cover
-          ? color.paper
-          : font === heading
-            ? color.accent
-            : bodyColor,
+        color: textColor,
       });
       y -= size * 1.5;
     }
     y -= 12;
   }
+
   let contents: PDFPage | undefined;
   for (const section of sections) {
     const cover = section.key === 'cover';
     start(cover);
-    if (cover)
-      page!.drawRectangle({
-        x: margin,
-        y: 603,
-        width: 82,
-        height: 4,
-        color: color.soft,
-      });
+    if (cover) {
+      if (template === 'classic-heritage') {
+        page!.drawRectangle({
+          x: margin,
+          y: 603,
+          width: 82,
+          height: 4,
+          color: color.soft,
+        });
+      }
+    }
     if (section.key === 'contents') {
       contents = page!;
       draw(section.title, 28, heading);
@@ -183,10 +341,14 @@ export async function renderPdf(
     if (
       section.key === 'gallery' &&
       section.edit === undefined &&
-      section.mediaIds?.length
+      (section.photos?.length || section.mediaIds?.length)
     ) {
-      for (const [index, id] of section.mediaIds.entries()) {
-        const item = media.find((candidate) => candidate.id === id);
+      const photoItems =
+        section.photos ??
+        section.mediaIds?.map((id) => ({ id, caption: undefined })) ??
+        [];
+      for (const [index, photo] of photoItems.entries()) {
+        const item = media.find((candidate) => candidate.id === photo.id);
         const imageData = item ? await loadImage(item) : undefined;
         if (imageData?.length) {
           try {
@@ -207,7 +369,14 @@ export async function renderPdf(
             // An unavailable thumbnail leaves its caption and source credit in the book.
           }
         }
-        if (blocks[index]) draw(blocks[index], 10);
+        // Custom photo caption if provided, else paragraph block
+        const customCaption = photo.caption;
+        if (customCaption) {
+          const creditLine = item?.credit ? ` · ${item.credit}` : '';
+          draw(`${customCaption}${creditLine}`, 10);
+        } else if (blocks[index]) {
+          draw(blocks[index], 10);
+        }
       }
     } else {
       for (const [index, block] of blocks.entries()) {
@@ -220,6 +389,7 @@ export async function renderPdf(
       }
     }
   }
+
   if (contents) {
     page = contents;
     y = height - 148;
@@ -250,7 +420,10 @@ export async function renderPdf(
   }
   return pdf.save();
 }
+
 const sectionKeysAfterContents = new Set([
+  'dedication',
+  'acknowledgments',
   'introduction',
   'tree',
   'generations',

@@ -10,10 +10,13 @@ import {
 
 const settings: BookSettings = {
   title: 'Roots',
-  subtitle: '',
+  subtitle: 'A Family Journey',
   author: 'Family editors',
   copyright: 'Private edition',
   dedication: 'For the next generation',
+  acknowledgments: 'Special thanks to our ancestors and contributors',
+  template: 'classic-heritage',
+  fontTheme: 'serif',
   language: 'en',
   theme: 'forest',
   branch: null,
@@ -25,7 +28,7 @@ const settings: BookSettings = {
   media: [],
 };
 
-test('generates every section, verifies facts with references and includes a sample disclaimer', () => {
+test('generates every section including dedication, acknowledgments and verifies facts with references', () => {
   const sections = buildSections(settings, sampleContext(true));
   assert.deepEqual(
     sections.map(({ title }) => title),
@@ -34,6 +37,14 @@ test('generates every section, verifies facts with references and includes a sam
   assert.match(
     sections.find(({ key }) => key === 'introduction')!.paragraphs.join(' '),
     /fictional sample/,
+  );
+  assert.match(
+    sections.find(({ key }) => key === 'dedication')!.paragraphs[0],
+    /For the next generation/,
+  );
+  assert.match(
+    sections.find(({ key }) => key === 'acknowledgments')!.paragraphs[0],
+    /Special thanks to our ancestors/,
   );
   assert.match(
     sections.find(({ key }) => key === 'biographies')!.paragraphs[0],
@@ -62,7 +73,7 @@ test('localizes headings, retains exact names and omits unsupported profile deta
   assert.doesNotMatch(body, /1882|Bookbinder|Plovdiv/);
 });
 
-test('keeps archive captions associated with the correct files', () => {
+test('keeps archive captions and custom photo captions associated with the correct files', () => {
   const data = sampleContext(false);
   data.media = [
     {
@@ -83,10 +94,41 @@ test('keeps archive captions associated with the correct files', () => {
     },
   ];
   const gallery = buildSections(
-    { ...settings, privacy: 'full', consent: true },
+    {
+      ...settings,
+      privacy: 'full',
+      consent: true,
+      mediaCaptions: {
+        one: 'Grandma’s wedding portrait in Sofia',
+      },
+    },
     data,
   ).find(({ key }) => key === 'gallery');
+
   assert.deepEqual(gallery?.mediaIds, ['one', 'two']);
+  assert.equal(
+    gallery?.photos?.[0].caption,
+    'Grandma’s wedding portrait in Sofia',
+  );
+  assert.match(gallery!.paragraphs[0], /Grandma’s wedding portrait in Sofia/);
   assert.match(gallery!.paragraphs[0], /Licensed by the contributor/);
   assert.match(gallery!.paragraphs[1], /Archive document reference/);
+});
+
+test('supports templates (Classic Heritage, Modern Minimal, Vintage Archive) and font themes', () => {
+  const templates = [
+    'classic-heritage',
+    'modern-minimal',
+    'vintage-archive',
+  ] as const;
+  for (const template of templates) {
+    const config: BookSettings = {
+      ...settings,
+      template,
+      fontTheme: 'editorial',
+      theme: 'sepia',
+    };
+    const sections = buildSections(config, sampleContext(true));
+    assert.equal(sections.length, 15);
+  }
 });

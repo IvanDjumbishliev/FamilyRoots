@@ -2,33 +2,31 @@ import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ActionLink } from '@/components/ActionLink';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
-import { Dialog } from '@/components/Dialog';
 import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { PageHeading } from '@/components/PageHeading';
 import { Screen } from '@/components/Screen';
-import { TextField } from '@/components/TextField';
-import { Type } from '@/components/Type';
-import { downloadArchiveFile } from '@/features/archive/archiveDownload';
+import { BookEditor } from '@/features/books/BookEditor';
 import { useBooks } from '@/features/books/useBooks';
-import { Choices } from '@/features/people/Choices';
 import { usePeopleQuery } from '@/features/people/usePeople';
-import { bookError, type BookRepository } from '@/services/bookRepository';
+import type { BookRepository } from '@/services/bookRepository';
 import { isRecordId } from '@/services/peopleRepository';
-
-type Book = Awaited<ReturnType<BookRepository['read']>>;
-type Part = Book['sections'][number];
+import type { BookMedia } from '../../../../supabase/functions/family-book-worker/book';
 
 export default function BookRoute() {
   const { bookId } = useLocalSearchParams<{ bookId?: string }>();
-  const { repository } = useBooks();
+  const { repository, archive } = useBooks();
+
   return (
     <Screen>
       <ActionLink href="/my-books" label="Back to My Books" variant="quiet" />
       {repository && isRecordId(bookId) ? (
-        <BookDetail key={bookId} id={bookId} repository={repository} />
+        <BookDetail
+          key={bookId}
+          id={bookId}
+          repository={repository}
+          archive={archive}
+        />
       ) : (
         <ErrorState message="This book is unavailable." />
       )}
@@ -39,9 +37,11 @@ export default function BookRoute() {
 function BookDetail({
   id,
   repository,
+  archive,
 }: {
   id: string;
   repository: BookRepository;
+  archive?: any;
 }) {
   const read = useCallback(() => repository.read(id), [id, repository]);
   const query = usePeopleQuery(read);
@@ -54,6 +54,37 @@ function BookDetail({
   const reload = useRef(query.reload);
   reload.current = query.reload;
 
+  // Fetch available archive items for photograph selection
+  const [mediaItems, setMediaItems] = useState<BookMedia[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadMedia() {
+      if (!archive || !book) return;
+      try {
+        const items = await archive.items(book.tree_id);
+        if (mounted && Array.isArray(items)) {
+          setMediaItems(
+            items.map((i: any) => ({
+              id: i.id,
+              title: i.title,
+              credit: i.source_note,
+              mime: i.mime_type,
+              path: i.thumbnail_path,
+              description: i.description,
+            })),
+          );
+        }
+      } catch {
+        // archive items optional
+      }
+    }
+    void loadMedia();
+    return () => {
+      mounted = false;
+    };
+  }, [archive, book]);
+
   const wake = useCallback(async () => {
     setWorkerError('');
     try {
@@ -64,12 +95,14 @@ function BookDetail({
       );
     }
   }, [id, repository]);
+
   useEffect(() => {
     if (queued && generation !== lastWake.current) {
       lastWake.current = generation;
       void wake();
     }
   }, [generation, queued, wake]);
+
   useEffect(() => {
     if (!working && !queued) return;
     const interval = setInterval(() => reload.current(), 1600);
@@ -79,17 +112,18 @@ function BookDetail({
   if (query.error)
     return <ErrorState message={query.error} onRetry={query.reload} />;
   if (!book) return <LoadingState label="Loading book…" />;
+
   return (
     <>
       <PageHeading
         title={book.title}
-        description="Review your chapters and prepare a private PDF."
+        description="Customize your family history book: edit text, reorder chapters, choose templates, and export PDF."
       />
       {(queued || working) && (
         <LoadingState
           label={
             book.operation === 'pdf'
-              ? 'Preparing your PDF…'
+              ? 'Preparing your updated PDF…'
               : 'Generating your draft…'
           }
         />
@@ -100,194 +134,12 @@ function BookDetail({
       {book.status === 'failed' && (
         <ErrorState message={book.error ?? 'Book generation failed.'} />
       )}
-      <BookEditor book={book} repository={repository} reload={query.reload} />
-    </>
-  );
-}
-
-function BookEditor({
-  book,
-  repository,
-  reload,
-}: {
-  book: Book;
-  repository: BookRepository;
-  reload: () => void;
-}) {
-  const [key, setKey] = useState<Part['key']>('introduction');
-  const [editor, setEditor] = useState<{
-    id: Part['key'];
-    body: string;
-    revision: number;
-  }>();
-  const [permission, setPermission] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [issue, setIssue] = useState('');
-  const section = book.sections.find((item) => item.key === key);
-  const generating = book.status === 'queued' || book.status === 'working';
-  const path =
-    book.status === 'ready' && book.pdf_revision === book.revision
-      ? book.pdf_path
-      : null;
-
-  async function perform(fn: () => Promise<unknown>, refresh = true) {
-    setIssue('');
-    setBusy(true);
-    try {
-      await fn();
-      if (refresh) reload();
-    } catch (error) {
-      setIssue(bookError(error));
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <>
-      {book.status === 'failed' && (
-        <Button
-          label="Retry generation"
-          disabled={busy}
-          onPress={() =>
-            void perform(() =>
-              repository.queue(book.id, book.revision, 'retry'),
-            )
-          }
-        />
-      )}
-      {!!book.sections.length && (
-        <Card>
-          <Choices
-            label="Book sections"
-            value={key}
-            onChange={setKey}
-            choices={book.sections.map((item) => ({
-              value: item.key,
-              label: item.title,
-            }))}
-          />
-          {section && (
-            <>
-              <Type variant="heading" accessibilityRole="header">
-                {section.title}
-              </Type>
-              {(section.edit !== undefined
-                ? section.edit.split(/\n\n+/)
-                : section.paragraphs
-              ).map((block, index) => (
-                <Type key={index}>{block}</Type>
-              ))}
-              {section.key !== 'contents' && (
-                <>
-                  <Button
-                    label="Edit section"
-                    variant="secondary"
-                    disabled={busy || generating}
-                    onPress={() =>
-                      setEditor({
-                        id: section.key,
-                        body: section.edit ?? section.paragraphs.join('\n\n'),
-                        revision: book.revision,
-                      })
-                    }
-                  />
-                  <Button
-                    label="Regenerate section"
-                    variant="quiet"
-                    disabled={busy || generating}
-                    onPress={() =>
-                      void perform(() =>
-                        repository.queue(
-                          book.id,
-                          book.revision,
-                          'section',
-                          section.key,
-                        ),
-                      )
-                    }
-                  />
-                </>
-              )}
-            </>
-          )}
-          <Button
-            label="I reviewed the draft for sensitive details and reproduction permissions"
-            variant="secondary"
-            accessibilityRole="checkbox"
-            aria-checked={permission}
-            selected={permission}
-            accessibilityState={{ checked: permission }}
-            onPress={() => setPermission(!permission)}
-          />
-          <Button
-            label="Export PDF"
-            disabled={!permission || busy || generating}
-            onPress={() =>
-              void perform(() =>
-                repository.queue(book.id, book.revision, 'pdf'),
-              )
-            }
-          />
-          {path && (
-            <Button
-              label="Download PDF"
-              disabled={busy}
-              onPress={() =>
-                void perform(async () => {
-                  const url = await repository.download(path);
-                  await downloadArchiveFile(
-                    url,
-                    'family-history.pdf',
-                    'application/pdf',
-                  );
-                }, false)
-              }
-            />
-          )}
-        </Card>
-      )}
-      {!editor && issue && <ErrorState message={issue} />}
-      <Dialog
-        title="Edit section"
-        open={!!editor}
-        onClose={() => {
-          setEditor(undefined);
-          setIssue('');
-        }}
-      >
-        {editor && (
-          <>
-            <Type tone="muted">
-              Keep reference labels such as [R1] if the text relies on those
-              sources. Review personal details you add before export.
-            </Type>
-            <TextField
-              label="Section text"
-              multiline
-              maxLength={20000}
-              value={editor.body}
-              onChangeText={(body) => setEditor({ ...editor, body })}
-            />
-            {issue && <ErrorState message={issue} />}
-            <Button
-              label="Save section"
-              disabled={busy || editor.body.length > 20000}
-              onPress={() =>
-                void perform(async () => {
-                  await repository.edit(
-                    book.id,
-                    editor.revision,
-                    editor.id,
-                    editor.body,
-                  );
-                  setEditor(undefined);
-                  setPermission(false);
-                })
-              }
-            />
-          </>
-        )}
-      </Dialog>
+      <BookEditor
+        book={book}
+        repository={repository}
+        reload={query.reload}
+        availableMedia={mediaItems}
+      />
     </>
   );
 }

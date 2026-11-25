@@ -1,8 +1,9 @@
 export const sectionKeys = [
   'cover',
   'title',
-  'copyright',
   'dedication',
+  'acknowledgments',
+  'copyright',
   'contents',
   'introduction',
   'tree',
@@ -16,13 +17,27 @@ export const sectionKeys = [
 ] as const;
 export type SectionKey = (typeof sectionKeys)[number];
 export type Language = 'en' | 'es' | 'bg';
-export type Theme = 'forest' | 'ink' | 'sepia';
+export type Theme = 'forest' | 'ink' | 'sepia' | 'rose' | 'slate';
+export type BookTemplate =
+  | 'classic-heritage'
+  | 'modern-minimal'
+  | 'vintage-archive';
+export type FontTheme = 'serif' | 'sans' | 'editorial';
+
+export type BookPhoto = {
+  id: string;
+  caption?: string;
+};
+
 export type BookSettings = {
   title: string;
   subtitle: string;
   author: string;
   copyright: string;
   dedication: string;
+  acknowledgments?: string;
+  template?: BookTemplate;
+  fontTheme?: FontTheme;
   language: Language;
   theme: Theme;
   branch: string | null;
@@ -32,15 +47,19 @@ export type BookSettings = {
   biographies: string[];
   events: string[];
   media: string[];
+  mediaCaptions?: Record<string, string>;
 };
+
 export type Section = {
   key: SectionKey;
   title: string;
   paragraphs: string[];
   edit?: string;
   mediaIds?: string[];
+  photos?: BookPhoto[];
 };
-type Person = {
+
+export type Person = {
   id: string;
   name: string;
   verified: boolean;
@@ -55,7 +74,8 @@ type Person = {
   occupation: string | null;
   biography: string | null;
 };
-type Event = {
+
+export type Event = {
   id: string;
   title: string | null;
   type: string;
@@ -64,7 +84,8 @@ type Event = {
   approximate: boolean;
   people: string[];
 };
-type Source = {
+
+export type Source = {
   id: string;
   personId: string | null;
   eventId: string | null;
@@ -72,6 +93,7 @@ type Source = {
   locator: string | null;
   url: string | null;
 };
+
 export type BookMedia = {
   id: string;
   title: string;
@@ -80,6 +102,7 @@ export type BookMedia = {
   path: string | null;
   description: string | null;
 };
+
 export type BookContext = {
   people: Person[];
   edges: { parent: string; child: string; kind: string }[];
@@ -88,58 +111,61 @@ export type BookContext = {
   media: BookMedia[];
 };
 
-const headings: Record<Language, readonly string[]> = {
-  en: [
-    'Cover',
-    'Title page',
-    'Copyright and attribution',
-    'Dedication',
-    'Contents',
-    'Family introduction',
-    'Family tree overview',
-    'Generational chapters',
-    'Individual biographies',
-    'Important family events',
-    'Photographs and documents',
-    'Historical timeline',
-    'Sources and references',
-    'Closing chapter',
-  ],
-  es: [
-    'Cubierta',
-    'Portada',
-    'Derechos y atribución',
-    'Dedicatoria',
-    'Índice',
-    'Introducción familiar',
-    'Árbol familiar',
-    'Capítulos generacionales',
-    'Biografías',
-    'Eventos familiares',
-    'Fotografías y documentos',
-    'Cronología',
-    'Fuentes y referencias',
-    'Capítulo final',
-  ],
-  bg: [
-    'Корица',
-    'Заглавна страница',
-    'Авторство и права',
-    'Посвещение',
-    'Съдържание',
-    'Въведение',
-    'Родословно дърво',
-    'Поколения',
-    'Биографии',
-    'Семейни събития',
-    'Снимки и документи',
-    'Хронология',
-    'Източници',
-    'Заключителна глава',
-  ],
+const headings: Record<Language, Record<SectionKey, string>> = {
+  en: {
+    cover: 'Cover',
+    title: 'Title page',
+    dedication: 'Dedication',
+    acknowledgments: 'Acknowledgments',
+    copyright: 'Copyright and attribution',
+    contents: 'Contents',
+    introduction: 'Family introduction',
+    tree: 'Family tree overview',
+    generations: 'Generational chapters',
+    biographies: 'Individual biographies',
+    events: 'Important family events',
+    gallery: 'Photographs and documents',
+    timeline: 'Historical timeline',
+    sources: 'Sources and references',
+    closing: 'Closing chapter',
+  },
+  es: {
+    cover: 'Cubierta',
+    title: 'Portada',
+    dedication: 'Dedicatoria',
+    acknowledgments: 'Agradecimientos',
+    copyright: 'Derechos y atribución',
+    contents: 'Índice',
+    introduction: 'Introducción familiar',
+    tree: 'Árbol familiar',
+    generations: 'Capítulos generacionales',
+    biographies: 'Biografías',
+    events: 'Eventos familiares',
+    gallery: 'Fotografías y documentos',
+    timeline: 'Cronología',
+    sources: 'Fuentes y referencias',
+    closing: 'Capítulo final',
+  },
+  bg: {
+    cover: 'Корица',
+    title: 'Заглавна страница',
+    dedication: 'Посвещение',
+    acknowledgments: 'Благодарности',
+    copyright: 'Авторство и права',
+    contents: 'Съдържание',
+    introduction: 'Въведение',
+    tree: 'Родословно дърво',
+    generations: 'Поколения',
+    biographies: 'Биографии',
+    events: 'Семейни събития',
+    gallery: 'Снимки и документи',
+    timeline: 'Хронология',
+    sources: 'Източници',
+    closing: 'Заключителна глава',
+  },
 };
 
-const words = {
+export const words = {
   en: {
     account:
       'This account draws on the selected family tree. Verified facts are given with references when available.',
@@ -154,6 +180,7 @@ const words = {
       'Editorial additions and family material come from contributors. Media credits are recorded as supplied. Automated text is assembled from tree records without generative AI.',
     missing: 'No eligible entries were selected for this section.',
     noDedication: 'A dedication can be added in the draft editor.',
+    noAcknowledgments: 'Acknowledgments can be added in the draft editor.',
     closing:
       'Keep original records, record uncertainties, and add new evidence as it becomes available.',
     total: 'Included profiles',
@@ -192,6 +219,7 @@ const words = {
       'Las aportaciones editoriales y familiares provienen de sus colaboradores. Los créditos de archivos se incluyen según lo indicado. El texto automatizado se compone a partir del árbol sin IA generativa.',
     missing: 'No se seleccionaron entradas aptas para esta sección.',
     noDedication: 'Puede añadir una dedicatoria en el editor.',
+    noAcknowledgments: 'Puede añadir agradecimientos en el editor.',
     closing:
       'Conserve los registros originales, señale las dudas y añada nueva evidencia cuando esté disponible.',
     total: 'Perfiles incluidos',
@@ -230,6 +258,7 @@ const words = {
       'Семейните материали и редакциите са предоставени от съставителите. Посоченото авторство на файловете се запазва. Автоматичният текст се съставя от записите без генеративен ИИ.',
     missing: 'Няма подходящи записи за този раздел.',
     noDedication: 'Посвещение може да се добави в редактора.',
+    noAcknowledgments: 'Благодарности могат да се добавят в редактора.',
     closing:
       'Пазете оригиналните документи, отбелязвайте неизвестното и добавяйте нови източници.',
     total: 'Включени профили',
@@ -257,9 +286,9 @@ const words = {
 } as const;
 
 export function outline(language: Language) {
-  return sectionKeys.map((key, index) => ({
+  return sectionKeys.map((key) => ({
     key,
-    title: headings[language][index],
+    title: headings[language][key],
   }));
 }
 
@@ -350,14 +379,25 @@ export function buildSections(
   const content: Record<SectionKey, string[]> = {
     cover: [settings.title, settings.subtitle, settings.author].filter(Boolean),
     title: [settings.title, settings.subtitle, settings.author].filter(Boolean),
+    dedication: [settings.dedication || w.noDedication],
+    acknowledgments: [settings.acknowledgments || w.noAcknowledgments],
     copyright: [
       settings.author && w.credits + ' · ' + settings.author,
       settings.copyright,
       w.rights,
       w.material,
     ].filter(Boolean),
-    dedication: [settings.dedication || w.noDedication],
-    contents: headings[settings.language].slice(5) as string[],
+    contents: [
+      headings[settings.language].introduction,
+      headings[settings.language].tree,
+      headings[settings.language].generations,
+      headings[settings.language].biographies,
+      headings[settings.language].events,
+      headings[settings.language].gallery,
+      headings[settings.language].timeline,
+      headings[settings.language].sources,
+      headings[settings.language].closing,
+    ],
     introduction: [
       settings.sample ? w.sample : w.account,
       ...(settings.privacy === 'private' ? [w.privacy] : []),
@@ -411,8 +451,18 @@ export function buildSections(
       (e) =>
         `${e.label} [${e.ref}]${showCite(cite(undefined, e.id))}\n${e.date} · ${e.people.join(', ')}`,
     ),
-    gallery: data.media.map((m) =>
-      [
+    gallery: data.media.map((m) => {
+      const customCaption = settings.mediaCaptions?.[m.id];
+      if (customCaption) {
+        return (
+          customCaption +
+          '\n' +
+          (m.credit
+            ? w.credit + ' · ' + m.credit
+            : w.credit + ' · ' + w.noCredit)
+        );
+      }
+      return [
         m.title,
         m.description,
         m.mime.startsWith('image/')
@@ -420,8 +470,8 @@ export function buildSections(
           : w.file + ' · ' + (m.credit || w.noCredit),
       ]
         .filter(Boolean)
-        .join('\n'),
-    ),
+        .join('\n');
+    }),
     timeline: events.map(
       (e) =>
         `${e.date} · ${e.label} [${e.ref}]${showCite(cite(undefined, e.id))}`,
@@ -441,12 +491,19 @@ export function buildSections(
     ],
     closing: [w.closing],
   };
+
   return outline(settings.language).map(({ key, title }) => ({
     key,
     title,
     paragraphs: content[key].length ? content[key] : [w.missing],
     ...(key === 'gallery' && data.media.length
-      ? { mediaIds: data.media.map(({ id }) => id) }
+      ? {
+          mediaIds: data.media.map(({ id }) => id),
+          photos: data.media.map(({ id }) => ({
+            id,
+            caption: settings.mediaCaptions?.[id],
+          })),
+        }
       : {}),
   }));
 }

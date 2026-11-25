@@ -358,6 +358,45 @@ export type Database = {
           },
         ];
       };
+      family_book_revisions: {
+        Row: {
+          id: string;
+          book_id: string;
+          revision: number;
+          title: string;
+          settings: NonNullable<Json>;
+          sections: NonNullable<Json>;
+          created_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          id?: string;
+          book_id: string;
+          revision: number;
+          title: string;
+          settings: NonNullable<Json>;
+          sections: NonNullable<Json>;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          book_id?: string;
+          revision?: number;
+          title?: string;
+          settings?: NonNullable<Json>;
+          sections?: NonNullable<Json>;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'family_book_revisions_book_id_fkey';
+            columns: ['book_id'];
+            isOneToOne: false;
+            referencedRelation: 'family_books';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       family_trees: {
         Row: {
           created_at: string;
@@ -1524,6 +1563,15 @@ export type Database = {
           p_revision: number;
         };
         Returns: undefined;
+      };
+      save_family_book_draft: {
+        Args: {
+          p_id: string;
+          p_revision: number;
+          p_settings: Json;
+          p_sections: Json;
+        };
+        Returns: number;
       };
       export_gedcom: {
         Args: { p_exclude_living: boolean; p_tree: string };

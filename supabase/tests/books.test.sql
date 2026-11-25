@@ -41,7 +41,20 @@ select lives_ok($$select public.edit_family_book_section(current_setting('app.bo
  'creator can edit a completed draft section');
 select throws_ok($$select public.edit_family_book_section(current_setting('app.book_id')::uuid,1,'introduction','Stale text')$$,
  'P0002',null,'stale edits do not overwrite newer edits');
-select lives_ok($$select public.queue_family_book(current_setting('app.book_id')::uuid,2,'pdf',null,true)$$,'creator can queue PDF generation');
+
+-- Phase 16: Draft Saving & Revision History Tests
+select lives_ok($$select public.save_family_book_draft(
+  current_setting('app.book_id')::uuid,
+  2,
+  '{"title":"Updated Title","subtitle":"Sub","author":"Author","privacy":"private","template":"vintage-archive","theme":"sepia"}',
+  '[{"key":"introduction","title":"Intro","paragraphs":["Custom Introduction"]},{"key":"closing","title":"Closing","paragraphs":["End"]}]'
+)$$, 'creator can save customized draft content and settings');
+
+select is((select revision from public.family_books where id=current_setting('app.book_id')::uuid),3,'saving draft increments revision');
+select is((select settings->>'template' from public.family_books where id=current_setting('app.book_id')::uuid),'vintage-archive','template persists in draft settings');
+select is((select count(*) from public.family_book_revisions where book_id=current_setting('app.book_id')::uuid),1::bigint,'revision history is maintained');
+
+select lives_ok($$select public.queue_family_book(current_setting('app.book_id')::uuid,3,'pdf',null,true)$$,'creator can queue PDF generation');
 
 reset role;
 set local role service_role;
@@ -51,7 +64,7 @@ select ok(public.finish_family_book(current_setting('app.book_id')::uuid,current
 reset role;
 set local role authenticated;
 select is((select error from public.family_books where id=current_setting('app.book_id')::uuid),'Render failed','creator can read worker errors');
-select lives_ok($$select public.queue_family_book(current_setting('app.book_id')::uuid,3,'retry')$$,'creator can retry a failed job');
+select lives_ok($$select public.queue_family_book(current_setting('app.book_id')::uuid,4,'retry')$$,'creator can retry a failed job');
 select is((select operation from public.family_books where id=current_setting('app.book_id')::uuid),'pdf','retry keeps the failed operation');
 select * from finish();
 rollback;

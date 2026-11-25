@@ -19,21 +19,31 @@ const headers = {
   'Cache-Control': 'no-store',
 };
 const settingsSchema = z
-  .strictObject({
+  .object({
     title: z.string().trim().min(1).max(120),
-    subtitle: z.string().max(220),
-    author: z.string().max(120),
-    copyright: z.string().max(800),
-    dedication: z.string().max(1200),
+    subtitle: z.string().max(220).optional().default(''),
+    author: z.string().max(120).optional().default(''),
+    copyright: z.string().max(800).optional().default(''),
+    dedication: z.string().max(1200).optional().default(''),
+    acknowledgments: z.string().max(1200).optional().default(''),
+    template: z
+      .enum(['classic-heritage', 'modern-minimal', 'vintage-archive'])
+      .optional()
+      .default('classic-heritage'),
+    fontTheme: z
+      .enum(['serif', 'sans', 'editorial'])
+      .optional()
+      .default('serif'),
     language: z.enum(['en', 'es', 'bg']),
-    theme: z.enum(['forest', 'ink', 'sepia']),
-    branch: z.uuid().nullable(),
+    theme: z.enum(['forest', 'ink', 'sepia', 'rose', 'slate']),
+    branch: z.string().uuid().nullable().optional(),
     sample: z.boolean(),
     privacy: z.enum(['private', 'full']),
     consent: z.boolean(),
-    biographies: z.array(z.uuid()).max(100),
-    events: z.array(z.uuid()).max(100),
-    media: z.array(z.uuid()).max(10),
+    biographies: z.array(z.string().uuid()).max(100),
+    events: z.array(z.string().uuid()).max(100),
+    media: z.array(z.string().uuid()).max(10),
+    mediaCaptions: z.record(z.string(), z.string().max(500)).optional(),
   })
   .refine(
     (value) => value.privacy === 'private' || value.consent,
@@ -47,16 +57,25 @@ const sectionsSchema = z
       paragraphs: z.array(z.string().max(20000)).max(400),
       edit: z.string().max(20000).optional(),
       mediaIds: z.array(z.string()).max(10).optional(),
+      photos: z
+        .array(
+          z.object({
+            id: z.string(),
+            caption: z.string().max(500).optional(),
+          }),
+        )
+        .max(10)
+        .optional(),
     }),
   )
-  .max(sectionKeys.length);
-const requestSchema = z.strictObject({ bookId: z.uuid() });
+  .max(sectionKeys.length * 2);
+const requestSchema = z.strictObject({ bookId: z.string().uuid() });
 const workerSchema = z
   .array(
     z.object({
-      id: z.uuid(),
-      tree_id: z.uuid(),
-      lease: z.uuid(),
+      id: z.string().uuid(),
+      tree_id: z.string().uuid(),
+      lease: z.string().uuid(),
       status: z.literal('working'),
       operation: z.enum(['draft', 'section', 'pdf']),
       revision: z.number().int(),
@@ -144,9 +163,9 @@ async function work(service: ReturnType<typeof createClient>, bookId?: string) {
       );
     let sections = sectionsSchema.parse(job.sections);
     if (job.operation === 'draft')
-      sections = buildSections(settings.data, data);
+      sections = buildSections(settings.data as any, data);
     if (job.operation === 'section') {
-      const updated = buildSections(settings.data, data).find(
+      const updated = buildSections(settings.data as any, data).find(
         (section) => section.key === job.section_key,
       );
       if (!updated) throw new Error('This section is no longer available.');
@@ -157,7 +176,7 @@ async function work(service: ReturnType<typeof createClient>, bookId?: string) {
     if (job.operation === 'pdf') {
       // Use the tree archive thumbnails only; external URLs and documents are never fetched.
       const bytes = await renderPdf(
-        settings.data,
+        settings.data as any,
         sections,
         data.media,
         async (item) => {
